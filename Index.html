@@ -171,6 +171,26 @@
             .filters { flex-wrap: wrap; }
             .table-container { overflow-x: auto; }
         }    
+
+/* ===== Improved Mobile Layout ===== */
+@media (max-width:768px){
+html,body{overflow-x:hidden;height:auto;}
+body{display:block;padding-bottom:env(safe-area-inset-bottom);}
+.sidebar{position:fixed;left:-270px;top:0;width:260px;height:100vh;background:#fff;z-index:9999;transition:.3s;overflow-y:auto;}
+.sidebar.show{left:0;}
+.main-content{padding:16px;width:100%;}
+.header{flex-direction:column;align-items:flex-start;gap:16px;}
+.header-actions{width:100%;flex-direction:column;align-items:stretch;}
+.search-bar{width:100%;}
+.stats-grid{grid-template-columns:repeat(2,minmax(140px,1fr));gap:12px;}
+.toolbar{flex-direction:column;align-items:stretch;gap:16px;}
+.filters{display:grid;grid-template-columns:1fr;gap:10px;}
+.toolbar>div:last-child{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.btn{width:100%;justify-content:center;}
+.table-container{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.modal{width:95%;max-height:90vh;}
+.modal-body{overflow:auto;}
+}
 </style>
 </head>
 <body>
@@ -749,30 +769,13 @@ testSupabase();
 }
 
 async function uploadAttachment(file){
-
     if(!file) return "";
-
-    const fileName =
-    `${Date.now()}_${file.name}`;
-
-    const { error } =
-        await client.storage
-            .from("attachments")
-            .upload(fileName,file);
-
-    if(error){
-
-        throw error;
-
-    }
-
-    const { data } =
-        client.storage
-            .from("attachments")
-            .getPublicUrl(fileName);
-
+    const fileName=`${Date.now()}_${file.name}`;
+    const bucket=client.storage.from("attachments");
+    const {error}=await bucket.upload(fileName,file,{upsert:true});
+    if(error) throw error;
+    const {data}=bucket.getPublicUrl(fileName);
     return data.publicUrl;
-
 }
 
 
