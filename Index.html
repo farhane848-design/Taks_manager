@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow - Task Manager</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* === VARIABLES (Fluent Design) === */
+        :root {
+            --primary: #2563EB;
+            --primary-hover: #1d4ed8;
+            --primary-light: #eff6ff;
+            --success: #22C55E;
+            --success-light: #dcfce7;
+            --warning: #F59E0B;
+            --warning-light: #fef3c7;
+            --danger: #EF4444;
+            --danger-light: #fee2e2;
+            --background: #F5F7FB;
+            --surface: #FFFFFF;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --radius: 18px;
+            --radius-sm: 8px;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0,0,0,0.05);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* === RESET & BASE === */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--background); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+        button { cursor: pointer; border: none; background: none; font-family: inherit; transition: var(--transition); }
+        input, select, textarea { font-family: inherit; outline: none; transition: var(--transition); }
+        ul { list-style: none; }
+        a { text-decoration: none; color: inherit; }
+
+        /* === LAYOUT === */
+        .sidebar { width: 260px; background: var(--surface); border-right: 1px solid var(--border); padding: 24px 16px; display: flex; flex-direction: column; }
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 24px 40px; }
+
+        /* === SIDEBAR === */
+        .brand { display: flex; align-items: center; gap: 12px; font-size: 20px; font-weight: 700; color: var(--primary); margin-bottom: 40px; padding: 0 12px; }
+        .brand i { font-size: 24px; background: var(--primary); color: white; padding: 6px; border-radius: 8px; }
+        .menu-title { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin: 20px 0 10px 12px; letter-spacing: 0.5px; }
+        .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: var(--radius-sm); color: var(--text-muted); font-weight: 500; margin-bottom: 4px; }
+        .menu-item:hover { background: var(--background); color: var(--text-main); }
+        .menu-item.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+        
+        /* === HEADER === */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+        .greeting h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+        .greeting p { color: var(--text-muted); font-size: 14px; }
+        .header-actions { display: flex; align-items: center; gap: 20px; }
+        .search-bar { background: var(--surface); border: 1px solid var(--border); padding: 10px 16px; border-radius: 20px; display: flex; align-items: center; gap: 10px; width: 300px; }
+        .search-bar input { border: none; background: none; width: 100%; font-size: 14px; }
+        .profile { display: flex; align-items: center; gap: 10px; font-weight: 500; font-size: 14px; }
+        .profile img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+
+        /* === DASHBOARD STATS === */
+        .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; margin-bottom: 32px; }
+        .stat-card { background: var(--surface); padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow); display: flex; align-items: center; gap: 16px; }
+        .stat-icon { width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .stat-icon.blue { background: var(--primary-light); color: var(--primary); }
+        .stat-icon.green { background: var(--success-light); color: var(--success); }
+        .stat-icon.yellow { background: var(--warning-light); color: var(--warning); }
+        .stat-icon.red { background: var(--danger-light); color: var(--danger); }
+        .stat-info h3 { font-size: 13px; color: var(--text-muted); font-weight: 500; margin-bottom: 4px; }
+        .stat-info p { font-size: 24px; font-weight: 700; }
+
+        /* === ACTIONS & FILTERS === */
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; background: var(--surface); padding: 16px 20px; border-radius: var(--radius); box-shadow: var(--shadow); }
+        .filters { display: flex; gap: 12px; }
+        .filter-select { padding: 8px 16px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; color: var(--text-main); background: var(--surface); cursor: pointer; }
+        .btn { padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-outline { border: 1px solid var(--border); color: var(--text-main); background: var(--surface); }
+        .btn-outline:hover { background: var(--background); }
+
+        /* === TABLE === */
+        .table-container { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 24px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { padding: 16px 20px; font-size: 13px; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+        td { padding: 16px 20px; font-size: 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background: var(--background); }
+        
+        .task-title-cell { display: flex; flex-direction: column; gap: 4px; }
+        .task-title { font-weight: 600; color: var(--text-main); }
+        .task-description { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px; }
+        
+        /* Badges */
+        .badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
+        .badge-project { background: var(--background); border: 1px solid var(--border); }
+        .badge.warning { background: var(--warning-light); color: var(--warning); }
+        .badge.danger { background: var(--danger-light); color: var(--danger); }
+        .badge.success { background: var(--success-light); color: var(--success); }
+        
+        .status-toggle { cursor: pointer; user-select: none; transition: var(--transition); }
+        .status-toggle:hover { opacity: 0.8; }
+
+        .action-btn { color: var(--text-muted); padding: 4px 8px; border-radius: 4px; }
+        .action-btn:hover { background: var(--background); color: var(--primary); }
+
+        /* === MODALS === */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: var(--transition); }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        .modal { background: var(--surface); width: 500px; max-width: 90%; border-radius: var(--radius); box-shadow: 0 10px 40px rgba(0,0,0,0.1); transform: translateY(20px); transition: var(--transition); max-height: 90vh; display: flex; flex-direction: column; }
+        .modal-overlay.active .modal { transform: translateY(0); }
+        
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { font-size: 18px; font-weight: 600; }
+        .close-modal { font-size: 20px; color: var(--text-muted); }
+        
+        .modal-body { padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .form-group label { font-size: 13px; font-weight: 600; color: var(--text-main); }
+        .form-control { padding: 12px 16px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; background: var(--background); }
+        .form-control:focus { border-color: var(--primary); background: var(--surface); }
+        
+        .color-picker { display: flex; gap: 10px; }
+        .color-btn { width: 30px; height: 30px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
+        .color-btn.active { border-color: var(--text-main); transform: scale(1.1); }
+        
+        .modal-footer { padding: 20px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 12px; }
+
+        /* Checklist */
+        .checklist-container { display: flex; flex-direction: column; gap: 8px; }
+        .checklist-item { display: flex; align-items: center; gap: 10px; }
+        .checklist-item input[type="text"] { flex: 1; border: none; background: transparent; font-size: 14px; border-bottom: 1px solid var(--border); padding: 4px 0; }
+        .checklist-item input[type="text"]:focus { border-bottom-color: var(--primary); }
+        .del-check { color: var(--danger); cursor: pointer; }
+
+        /* === TOAST === */
+        .toast-container { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 1100; }
+        .toast { background: var(--surface); color: var(--text-main); padding: 16px 20px; border-radius: var(--radius-sm); box-shadow: var(--shadow); display: flex; align-items: center; gap: 12px; min-width: 300px; transform: translateX(120%); transition: var(--transition); border-left: 4px solid var(--primary); }
+        .toast.show { transform: translateX(0); }
+        .toast.success { border-color: var(--success); }
+        .toast.danger { border-color: var(--danger); }
+        .toast i { font-size: 20px; }
+
+        /* Checkbox styling */
+        .custom-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary); }
+
+        /* Spinner */
+        .spinner { border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 2px solid white; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Empty State */
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+        .empty-state i { font-size: 48px; margin-bottom: 16px; color: var(--border); }
+        .empty-state p { margin-bottom: 16px; }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 16px; flex-direction: row; align-items: center; justify-content: space-between; }
+            .menu-title, .menu-item span { display: none; }
+            .menu-item { padding: 10px; }
+            .brand { margin-bottom: 0; }
+            .main-content { padding: 16px; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .toolbar { flex-direction: column; gap: 16px; align-items: stretch; }
+            .filters { flex-wrap: wrap; }
+            .table-container { overflow-x: auto; }
+        }    
+</style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="brand">
+            <i class="fa-solid fa-check-double"></i>
+            <div>TaskFlow<br><span style="font-size:10px; font-weight:500; color:var(--text-muted);">Task Manager</span></div>
+        </div>
+        
+        <div class="menu-title">Menu Utama</div>
+        <ul>
+            <li><a href="#" class="menu-item active"><i class="fa-solid fa-list-check"></i> <span>Semua Task</span></a></li>
+            <li><a href="#" class="menu-item" onclick="filterByArchive(false)"><i class="fa-regular fa-folder"></i> <span>Project Aktif</span></a></li>
+            <li><a href="#" class="menu-item" onclick="filterByArchive(true)"><i class="fa-solid fa-box-archive"></i> <span>Arsip Project</span></a></li>
+        </ul>
+
+        <div class="menu-title" style="margin-top:auto;">Lainnya</div>
+        <ul>
+            <li>
+                <a href="#" class="menu-item" onclick="document.getElementById('restoreFile').click()">
+                    <i class="fa-solid fa-upload"></i>
+                    <span>Restore Backup</span>
+                </a>
+            </li>
+
+            <input
+                type="file"
+                id="restoreFile"
+                accept=".json"
+                style="display:none"
+                onchange="restoreBackup(event)">
+        </ul>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <header class="header">
+            <div class="greeting">
+                <h1>Semua Task</h1>
+                <p>Kelola semua tugas dari berbagai project dalam satu tempat.</p>
+            </div>
+            <div class="header-actions">
+                <div class="search-bar">
+                    <i class="fa-solid fa-search" style="color:var(--text-muted)"></i>
+                    <input type="text" id="searchInput" placeholder="Cari task, project, atau catatan..." onkeyup="handleSearch()">
+                </div>
+                <div class="profile">
+                    <img src="https://ui-avatars.com/api/?name=Farhan+Ersandy&background=2563EB&color=fff" alt="Profile">
+                    <div>Farhan Ersandy</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- STATS -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fa-solid fa-folder"></i></div>
+                <div class="stat-info">
+                    <h3>Total Project</h3>
+                    <p id="statTotalProject">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fa-solid fa-clipboard-list"></i></div>
+                <div class="stat-info">
+                    <h3>Total Task</h3>
+                    <p id="statTotalTask">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon yellow"><i class="fa-regular fa-clock"></i></div>
+                <div class="stat-info">
+                    <h3>Belum Selesai</h3>
+                    <p id="statPending">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green" style="background:var(--success); color:white;"><i class="fa-solid fa-check"></i></div>
+                <div class="stat-info">
+                    <h3>Selesai</h3>
+                    <p id="statDone">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <div class="stat-info">
+                    <h3>Terlambat</h3>
+                    <p id="statOverdue">0</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TOOLBAR (Filters & Actions) -->
+        <section class="toolbar">
+            <div class="filters">
+                <select class="filter-select" id="filterProject" onchange="renderTable()">
+                    <option value="">Semua Project</option>
+                </select>
+                <select class="filter-select" id="filterStatus" onchange="renderTable()">
+                    <option value="">Semua Status</option>
+                    <option value="pending">Belum Selesai</option>
+                    <option value="done">Selesai</option>
+                </select>
+                <select class="filter-select" id="sortData" onchange="renderTable()">
+                    <option value="deadline_asc">Deadline Terdekat</option>
+                    <option value="deadline_description">Deadline Terlama</option>
+                    <option value="newest">Task Terbaru</option>
+                </select>
+                <button class="btn btn-outline" onclick="resetFilters()"><i class="fa-solid fa-rotate-right"></i> Reset</button>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-outline" onclick="openProjectModal()"><i class="fa-solid fa-folder-plus"></i> Tambah Project</button>
+                <button class="btn btn-primary" onclick="openTaskModal()"><i class="fa-solid fa-plus"></i> Tambah Task</button>
+            </div>
+        </section>
+
+        <!-- TABLE -->
+        <section class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th width="40"><i class="fa-solid fa-check-square"></i></th>
+                        <th>Task & Uraian</th>
+                        <th>Project</th>
+                        <th>Deadline</th>
+                        <th>Status</th>
+                        <th>Lampiran</th>
+                        <th width="80">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="taskTableBody">
+                    <!-- Data will be rendered here via JS -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- MODAL: TAMBAH/EDIT PROJECT -->
+    <div class="modal-overlay" id="projectModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="projectModalTitle">Tambah Project Baru</h2>
+                <button class="close-modal" onclick="closeModal('projectModal')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="project_id">
+                <div class="form-group">
+                    <label>Nama Project *</label>
+                    <input type="text" id="projectName" class="form-control" placeholder="Contoh: Website SIMASDA" required>
+                </div>
+                <div class="form-group">
+                    <label>Deskripsi (Opsional)</label>
+                    <textarea id="projectDesc" class="form-control" rows="3" placeholder="Jelaskan tentang project ini..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Pilih Warna</label>
+                    <div class="color-picker" id="projectColorPicker">
+                        <div class="color-btn active" style="background:#2563EB;" data-color="#2563EB" onclick="selectColor(this)"></div>
+                        <div class="color-btn" style="background:#22C55E;" data-color="#22C55E" onclick="selectColor(this)"></div>
+                        <div class="color-btn" style="background:#F59E0B;" data-color="#F59E0B" onclick="selectColor(this)"></div>
+                        <div class="color-btn" style="background:#EF4444;" data-color="#EF4444" onclick="selectColor(this)"></div>
+                        <div class="color-btn" style="background:#8B5CF6;" data-color="#8B5CF6" onclick="selectColor(this)"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Status Project</label>
+                    <select id="projectIsArchived" class="form-control">
+                        <option value="0">Aktif (Sedang Berjalan)</option>
+                        <option value="1">Arsip (Selesai/Disimpan)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('projectModal')">Batal</button>
+                <button class="btn btn-primary" id="btnSaveProject" onclick="saveProject()">Simpan Project</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: TAMBAH/EDIT TASK -->
+    <div class="modal-overlay" id="taskModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="taskModalTitle">Tambah Task Baru</h2>
+                <button class="close-modal" onclick="closeModal('taskModal')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="taskId">
+                <div class="form-group">
+                    <label>Project *</label>
+                    <select id="taskProject" class="form-control" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Judul Task *</label>
+                    <input type="text" id="taskTitle" class="form-control" placeholder="Contoh: Revisi Dashboard" required>
+                </div>
+                <div class="form-group">
+                    <label>Deadline *</label>
+                    <input type="date" id="taskDeadline" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Uraian / Deskripsi</label>
+                    <textarea id="taskDesc" class="form-control" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Subtask / Checklist</label>
+                    <div class="checklist-container" id="checklistContainer"></div>
+                    <button class="btn btn-outline" style="padding: 4px 10px; font-size:12px; margin-top:5px; width:fit-content;" onclick="addChecklistItem()"><i class="fa-solid fa-plus"></i> Tambah Item</button>
+                </div>
+                <div class="form-group">
+                    <label>Lampiran (Maks 10MB)</label>
+                    <input type="file" id="taskFile" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.zip">
+                    <div id="currentFileDisplay" style="font-size:12px; color:var(--primary); margin-top:4px;"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('taskModal')">Batal</button>
+                <button class="btn btn-primary" id="btnSaveTask" onclick="saveTask()">Simpan Task</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: DELETE CONFIRM -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal" style="width:400px;">
+            <div class="modal-header">
+                <h2>Konfirmasi Hapus</h2>
+            </div>
+            <div class="modal-body">
+                <p id="deleteMsg">Apakah Anda yakin ingin menghapus item ini?</p>
+                <input type="hidden" id="deleteTargetId">
+                <input type="hidden" id="deleteTargetType">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('deleteModal')">Batal</button>
+                <button class="btn btn-primary" style="background:var(--danger);" onclick="executeDelete()">Ya, Hapus</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+const SUPABASE_URL = "https://dbakpnpzslvvdgxychcg.supabase.co";
+const SUPABASE_KEY = "sb_publishable_V1BJXeUpyEaRqcWAIp9Kbg_vP2f1iDH";
+
+const client = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+async function testSupabase() {
+
+    const { data, error } = await client
+        .from("projects")
+        .select("*");
+
+    console.log("DATA :", data);
+    console.log("ERROR :", error);
+
+}
+
+testSupabase();
+        /**
+         * MOCK BACKEND API (Simulating Fetch API via LocalStorage)
+         * Dalam implementasi asli, fungsi 'apiCall' ini akan melakukan fetch() ke URL PHP endpoint.
+         */
+        
+        // Initial Data Structure
+        
+
+        // Initialize DB
+
+        // Mock Fetch API (Simulates Delay & Promise)
+        
+
+        /* === FRONTEND LOGIC === */
+        
+        let currentFilterArchive = false;
+
+        // On Load
+        document.addEventListener('DOMContentLoaded', () => {
+            refreshAll();
+        });
+
+        async function refreshAll() {
+            await Promise.all([
+                loadStats(),
+                loadProjectDropdown(),
+                renderTable()
+            ]);
+        }
+
+        // --- UI Updates ---
+        async function loadStats() {
+
+            const { data: projects, error: errProject } =
+                await client.from("projects").select("*");
+
+            const { data: tasks, error: errTask } =
+                await client.from("tasks").select("*");
+
+            if (errProject || errTask) {
+                console.error(errProject || errTask);
+                return;
+            }
+
+            const today = new Date().toISOString().split("T")[0];
+
+            document.getElementById("statTotalProject").innerText =
+                projects.filter(p => !p.is_archived).length;
+
+            document.getElementById("statTotalTask").innerText =
+                tasks.length;
+
+            document.getElementById("statPending").innerText =
+                tasks.filter(t => t.status == "pending").length;
+
+            document.getElementById("statDone").innerText =
+                tasks.filter(t => t.status == "done").length;
+
+            document.getElementById("statOverdue").innerText =
+                tasks.filter(t => t.status == "pending" && t.deadline < today).length;
+        }
+
+        async function loadProjectDropdown() {
+
+            const { data, error } =
+                await client
+                    .from("projects")
+                    .select("*")
+                    .order("id");
+
+            if (error) {
+                console.error(error);
+                return;
+            }
+
+            const select =
+                document.getElementById("filterProject");
+
+            const taskProjectSelect =
+                document.getElementById("taskProject");
+
+            let filterHtml =
+                `<option value="">Semua Project</option>`;
+
+            let formHtml = "";
+
+            data.forEach(p => {
+
+                let text =
+                    p.name +
+                    (p.is_archived ? " (Arsip)" : "");
+
+                filterHtml +=
+                    `<option value="${p.id}">${text}</option>`;
+
+                formHtml +=
+                    `<option value="${p.id}">${text}</option>`;
+            });
+
+            select.innerHTML = filterHtml;
+            taskProjectSelect.innerHTML = formHtml;
+        }
+
+        async function renderTable() {
+            const tableBody = document.getElementById('taskTableBody');
+            tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;"><div class="spinner" style="border-top-color:var(--primary);"></div> Memuat...</td></tr>';
+
+            const [
+                { data: tasks, error: taskError },
+                { data: projects, error: projectError }
+            ] = await Promise.all([
+                client.from("tasks").select("*"),
+                client.from("projects").select("*")
+            ]);
+
+            if (taskError || projectError) {
+                console.error(taskError || projectError);
+                return;
+            }
+
+            // Apply Filters
+            const searchQ = document.getElementById('searchInput').value.toLowerCase();
+            const filterProj = document.getElementById('filterProject').value;
+            const filterStat = document.getElementById('filterStatus').value;
+            const sortBy = document.getElementById('sortData').value;
+
+            // Filter Archive View
+            let allowedProjectIds = projects.filter(p => p.is_archived == (currentFilterArchive ? 1 : 0)).map(p => p.id);
+            
+            const filteredTasks = tasks.filter(t => {
+                let matchSearch = t.title.toLowerCase().includes(searchQ) || (t.description && t.description.toLowerCase().includes(searchQ));
+                let matchProj = filterProj ? t.project_id == filterProj : true;
+                let matchStat = filterStat ? t.status == filterStat : true;
+                return matchSearch && matchProj && matchStat && allowedProjectIds.includes(Number(t.project_id));
+            });
+
+            // Sorting
+            filteredTasks.sort((a, b) => {
+                if (sortBy === 'deadline_asc') return new Date(a.deadline) - new Date(b.deadline);
+                if (sortBy === 'deadline_description') return new Date(b.deadline) - new Date(a.deadline);
+                if (sortBy === 'newest') return b.id - a.id;
+            });
+
+            // Render
+            if (filteredTasks.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="7">
+                    <div class="empty-state">
+                        <i class="fa-solid fa-clipboard-check"></i>
+                        <p>Belum ada Task yang ditemukan.</p>
+                        <button class="btn btn-primary" onclick="openTaskModal()">Tambah Task</button>
+                    </div>
+                </td></tr>`;
+                return;
+            }
+
+            let html = '';
+            const today = new Date().toISOString().split('T')[0];
+
+            filteredTasks.forEach(t => {
+                let proj = projects.find(p => p.id == t.project_id) || { name: 'Unknown', color: '#ccc' };
+                
+                // Deadline Logic
+                let deadlineBadge = '';
+                if (t.status === 'done') {
+                    deadlineBadge = `<span class="badge success"><i class="fa-solid fa-check"></i> Selesai</span>`;
+                } else {
+                    if (t.deadline < today) {
+                        deadlineBadge = `<span class="badge danger"><i class="fa-solid fa-triangle-exclamation"></i> Terlambat (${t.deadline})</span>`;
+                    } else if (t.deadline === today) {
+                        deadlineBadge = `<span class="badge warning"><i class="fa-regular fa-clock"></i> Hari Ini</span>`;
+                    } else {
+                        deadlineBadge = `<span style="font-size:13px; color:var(--text-muted);">${t.deadline}</span>`;
+                    }
+                }
+
+                // Progress Checklist
+                let progress = '';
+                if (t.subtasks && t.subtasks.length > 0) {
+                    let doneC = t.subtasks.filter(s => s.done).length;
+                    let pct = Math.round((doneC / t.subtasks.length) * 100);
+                    progress = `<div style="font-size:11px; margin-top:4px; color:var(--text-muted);"><i class="fa-solid fa-list-check"></i> ${pct}% (${doneC}/${t.subtasks.length})</div>`;
+                }
+
+                let statusHtml = t.status === 'pending' 
+                    ? `<span class="badge warning status-toggle" onclick="toggleStatus(${t.id}, 'done')"><i class="fa-regular fa-circle"></i> Belum</span>`
+                    : `<span class="badge success status-toggle" onclick="toggleStatus(${t.id}, 'pending')"><i class="fa-solid fa-check-circle"></i> Selesai</span>`;
+
+                html += `
+                    <tr>
+                        <td><input type="checkbox" class="custom-checkbox" ${t.status === 'done' ? 'checked' : ''} onclick="toggleStatus(${t.id}, '${t.status === 'pending' ? 'done' : 'pending'}')"></td>
+                        <td>
+                            <div class="task-title-cell">
+                                <span class="task-title">${t.title}</span>
+                                ${t.description ? `<span class="task-description">${t.description}</span>` : ''}
+                                ${progress}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-project"><i class="fa-solid fa-folder" style="color:${proj.color}"></i> ${proj.name}</span>
+                        </td>
+                        <td>${deadlineBadge}</td>
+                        <td>${statusHtml}</td>
+                        <td>${t.attachment ? `<a
+                            href="${t.attachment}"
+                            target="_blank"
+                            style="color:var(--primary);">
+
+                            <i class="fa-solid fa-paperclip"></i>
+
+                            Lampiran
+
+                        </a>` : '-'}</td>
+                        <td>
+                            <button class="action-btn" onclick='editTask(${JSON.stringify(t).replace(/'/g, "&#39;")})'><i class="fa-solid fa-pen"></i></button>
+                            <button class="action-btn" style="color:var(--danger);" onclick="confirmDelete(${t.id}, 'task')"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableBody.innerHTML = html;
+        }
+
+        // --- Event Handlers ---
+        let searchTimeout;
+        function handleSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => { renderTable(); }, 300);
+        }
+
+        function filterByArchive(isArchive) {
+            currentFilterArchive = isArchive;
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            document.querySelector('.greeting h1').innerText = isArchive ? "Arsip Project" : "Semua Task";
+            renderTable();
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('filterProject').value = '';
+            document.getElementById('filterStatus').value = '';
+            document.getElementById('sortData').value = 'deadline_asc';
+            renderTable();
+        }
+
+        async function toggleStatus(id, newStatus) {
+
+            const { error } = await client
+                .from("tasks")
+                .update({
+                    status: newStatus
+                })
+                .eq("id", id);
+
+            if(error){
+                console.error(error);
+                return showToast(error.message,"danger");
+            }
+
+            showToast("Status berhasil diubah","success");
+
+            refreshAll();
+
+        }
+
+        // --- Modals & CRUD Project ---
+        function openProjectModal() {
+            document.getElementById('project_id').value = '';
+            document.getElementById('projectName').value = '';
+            document.getElementById('projectDesc').value = '';
+            document.getElementById('projectIsArchived').value = '0';
+            document.getElementById('projectModalTitle').innerText = 'Tambah Project Baru';
+            document.getElementById('projectModal').classList.add('active');
+        }
+
+        function editProject(project) {
+
+    document.getElementById("projectModal").classList.add("active");
+
+    document.getElementById("projectModalTitle").innerText =
+        "Edit Project";
+
+    document.getElementById("project_id").value =
+        project.id;
+
+    document.getElementById("projectName").value =
+        project.name;
+
+    document.getElementById("projectDesc").value =
+        project.description || "";
+
+    document.getElementById("projectIsArchived").value =
+        project.is_archived ? "1" : "0";
+
+    document.querySelectorAll(".color-btn")
+        .forEach(btn => {
+
+            btn.classList.remove("active");
+
+            if(btn.dataset.color == project.color){
+
+                btn.classList.add("active");
+
+            }
+
+        });
+
+}
+
+async function uploadAttachment(file){
+
+    if(!file) return "";
+
+    const fileName =
+    `${Date.now()}_${file.name}`;
+
+    const { error } =
+        await client.storage
+            .from("attachments")
+            .upload(fileName,file);
+
+    if(error){
+
+        throw error;
+
+    }
+
+    const { data } =
+        client.storage
+            .from("attachments")
+            .getPublicUrl(fileName);
+
+    return data.publicUrl;
+
+}
+
+
+        function selectColor(el) {
+            document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        async function saveProject() {
+            const name = document.getElementById('projectName').value;
+            if (!name) return showToast("Nama project wajib diisi", "danger");
+
+            const btn = document.getElementById('btnSaveProject');
+            btn.innerHTML = '<div class="spinner"></div> Menyimpan...';
+            btn.disabled = true;
+
+            const data = {
+                id: document.getElementById('project_id').value || null,
+                name: name,
+                description: document.getElementById('projectDesc').value,
+                color: document.querySelector('.color-btn.active').getAttribute('data-color'),
+                is_archived:
+                document.getElementById("projectIsArchived").value=="1"
+            };
+
+            try {
+
+                let error;
+
+                if (data.id) {
+
+                    ({ error } = await client
+                        .from("projects")
+                        .update({
+                            name: data.name,
+                            description: data.description,
+                            color: data.color,
+                            is_archived: data.is_archived
+                        })
+                        .eq("id", data.id));
+
+                } else {
+
+                    ({ error } = await client
+                        .from("projects")
+                        .insert([
+                            {
+                                name: data.name,
+                                description: data.description,
+                                color: data.color,
+                                is_archived: data.is_archived
+                            }
+                        ]));
+
+                }
+
+                if (error) throw error;
+
+                showToast(
+                    data.id
+                        ? "Project berhasil diperbarui"
+                        : "Project berhasil ditambahkan",
+                    "success"
+                );
+
+                closeModal("projectModal");
+
+                refreshAll();
+
+            }
+            catch (err) {
+
+                console.error(err);
+
+                showToast(err.message, "danger");
+
+            }
+            finally {
+
+                btn.innerHTML = "Simpan Project";
+                btn.disabled = false;
+
+            }
+            }
+
+
+        // --- Modals & CRUD Task ---
+        function openTaskModal() {
+            document.getElementById('taskId').value = '';
+            document.getElementById('taskTitle').value = '';
+            document.getElementById('taskDesc').value = '';
+            document.getElementById('taskDeadline').value = '';
+            document.getElementById('taskFile').value = '';
+            document.getElementById('currentFileDisplay').innerHTML = '';
+            document.getElementById('checklistContainer').innerHTML = '';
+            document.getElementById('taskModalTitle').innerText = 'Tambah Task Baru';
+            
+            if (document.getElementById('taskProject').options.length === 0) {
+                showToast("Silakan buat Project terlebih dahulu", "warning");
+                return;
+            }
+            document.getElementById('taskModal').classList.add('active');
+        }
+
+        function editTask(task) {
+            openTaskModal();
+            document.getElementById('taskModalTitle').innerText = 'Edit Task';
+            document.getElementById('taskId').value = task.id;
+            document.getElementById('taskProject').value = task.project_id;
+            document.getElementById('taskTitle').value = task.title;
+            document.getElementById('taskDeadline').value = task.deadline;
+            document.getElementById('taskDesc').value = task.description;
+            
+            if(task.attachment){
+
+                const currentFileDisplay =
+                    document.getElementById("currentFileDisplay");
+
+                currentFileDisplay.innerHTML = `
+                <a href="${task.attachment}" target="_blank">
+                📎 Lihat Lampiran
+                </a>`;
+
+                currentFileDisplay.dataset.url = task.attachment;
+
+            }
+
+            const container = document.getElementById('checklistContainer');
+            container.innerHTML = '';
+            if(task.subtasks) {
+                task.subtasks.forEach(st => {
+                    addChecklistItem(st.title, st.done);
+                });
+            }
+        }
+
+        function addChecklistItem(title = '', done = false) {
+            const container = document.getElementById('checklistContainer');
+            const div = document.createElement('div');
+            div.className = 'checklist-item';
+            div.innerHTML = `
+                <input type="checkbox" class="custom-checkbox chk-done" ${done ? 'checked' : ''}>
+                <input type="text" class="chk-title" placeholder="Nama subtask..." value="${title}">
+                <i class="fa-solid fa-trash del-check" onclick="this.parentElement.remove()"></i>
+            `;
+            container.appendChild(div);
+        }
+
+        async function saveTask() {
+            const title = document.getElementById('taskTitle').value;
+            const project_id = document.getElementById('taskProject').value;
+            const deadline = document.getElementById('taskDeadline').value;
+            
+            if (!title || !project_id || !deadline) return showToast("Mohon lengkapi field wajib (*)", "danger");
+
+            const fileInput = document.getElementById('taskFile');
+            if (fileInput.files.length > 0 && fileInput.files[0].size > 10 * 1024 * 1024) {
+                return showToast("Ukuran file maksimal 10MB", "danger");
+            }
+
+            const btn = document.getElementById('btnSaveTask');
+            btn.innerHTML = '<div class="spinner"></div> Menyimpan...';
+            btn.disabled = true;
+
+            // Gather checklists
+            let subtasks = [];
+            document.querySelectorAll('.checklist-item').forEach(el => {
+                let txt = el.querySelector('.chk-title').value;
+                let done = el.querySelector('.chk-done').checked;
+                if (txt) subtasks.push({ title: txt, done: done });
+            });
+
+            let attachment = "";
+
+            if(fileInput.files.length){
+
+                attachment =
+                    await uploadAttachment(
+                        fileInput.files[0]
+                    );
+
+            }else{
+
+                attachment =
+                    document
+                        .getElementById("currentFileDisplay")
+                        .dataset.url || "";
+
+            }
+            const data = {
+                id: document.getElementById('taskId').value || null,
+                project_id: Number(project_id),
+                title: title,
+                deadline: deadline,
+                description: document.getElementById('taskDesc').value,
+                subtasks: subtasks,
+                attachment: attachment
+};
+            
+
+            try {
+
+                if(data.id){
+
+                    const { error } = await client
+                        .from("tasks")
+                        .update({
+                            project_id:data.project_id,
+                            title:data.title,
+                            deadline:data.deadline,
+                            description:data.description,
+                            attachment:data.attachment,
+                            subtasks:data.subtasks
+                        })
+                        .eq("id",data.id);
+
+                    if(error) throw error;
+
+                }else{
+
+                    delete data.id;
+
+                    data.status="pending";
+
+                    const { error } = await client
+                        .from("tasks")
+                        .insert([data]);
+
+                    if(error) throw error;
+
+                }
+
+                showToast("Task berhasil disimpan","success");
+
+                closeModal("taskModal");
+
+                refreshAll();
+
+            }
+            catch(err){
+
+                console.error(err);
+
+                showToast(err.message,"danger");
+
+            }
+            finally {
+                btn.innerHTML = 'Simpan Task';
+                btn.disabled = false;
+            }
+        }
+
+        // --- Delete Logic ---
+        function confirmDelete(id, type) {
+            document.getElementById('deleteTargetId').value = id;
+            document.getElementById('deleteTargetType').value = type;
+            document.getElementById('deleteMsg').innerText = `Apakah Anda yakin ingin menghapus ${type} ini?`;
+            document.getElementById('deleteModal').classList.add('active');
+        }
+
+        async function executeDelete(){
+
+            const id=document.getElementById("deleteTargetId").value;
+
+            const type=document.getElementById("deleteTargetType").value;
+
+            let error;
+
+            if(type=="task"){
+
+                ({error}=await client
+                    .from("tasks")
+                    .delete()
+                    .eq("id",id));
+
+            }else{
+
+                ({error}=await client
+                    .from("projects")
+                    .delete()
+                    .eq("id",id));
+
+            }
+
+            if(error){
+
+                console.error(error);
+
+                return showToast(error.message,"danger");
+
+            }
+
+            closeModal("deleteModal");
+
+            showToast("Berhasil dihapus","success");
+
+            refreshAll();
+
+        } 
+
+        // --- Utils ---
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icon = type === 'success' ? 'fa-check-circle' : (type === 'danger' ? 'fa-triangle-exclamation' : 'fa-info-circle');
+            
+            toast.innerHTML = `<i class="fa-solid ${icon}" style="color:var(--${type})"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        async function downloadBackup() {
+
+            try {
+
+                // Ambil data Projects
+                const {
+                    data: projects,
+                    error: projectError
+                } = await client
+                    .from("projects")
+                    .select("*");
+
+                // Ambil data Tasks
+                const {
+                    data: tasks,
+                    error: taskError
+                } = await client
+                    .from("tasks")
+                    .select("*");
+
+                // Cek apakah ada error
+                if (projectError) throw projectError;
+                if (taskError) throw taskError;
+
+                // Susun data backup
+                const backup = {
+
+                    app: "TaskFlow",
+
+                    version: "2.0",
+
+                    export_date: new Date().toISOString(),
+
+                    total_projects: projects.length,
+
+                    total_tasks: tasks.length,
+
+                    projects,
+
+                    tasks
+
+                };
+
+                // Convert ke JSON
+                const json = JSON.stringify(
+                    backup,
+                    null,
+                    2
+                );
+
+                // Buat file
+                const blob = new Blob(
+                    [json],
+                    {
+                        type: "application/json"
+                    }
+                );
+
+                const url = URL.createObjectURL(blob);
+
+                const a = document.createElement("a");
+
+                a.href = url;
+
+                a.download =
+                    `TaskFlow_Backup_${
+                        new Date().toISOString().split("T")[0]
+                    }.json`;
+
+                document.body.appendChild(a);
+
+                a.click();
+
+                document.body.removeChild(a);
+
+                URL.revokeObjectURL(url);
+
+                showToast(
+                    "Backup berhasil diunduh",
+                    "success"
+                );
+
+            } catch (err) {
+
+                console.error(err);
+
+                showToast(
+                    "Backup gagal : " + err.message,
+                    "danger"
+                );
+
+            }
+
+        }
+        async function restoreBackup(event){
+
+            const file = event.target.files[0];
+
+            if(!file){
+
+                return;
+
+            }
+
+            try{
+
+                const text = await file.text();
+
+                const backup = JSON.parse(text);
+
+                if(!backup.projects || !backup.tasks){
+
+                    return showToast(
+                        "File backup tidak valid",
+                        "danger"
+                    );
+
+                }
+
+                if(!confirm(
+                    "Restore akan menghapus seluruh data yang ada sekarang.\n\nLanjutkan?"
+                )){
+
+                    return;
+
+                }
+
+                //
+                // Hapus data lama
+                //
+
+                await client
+                    .from("tasks")
+                    .delete()
+                    .neq("id",0);
+
+                await client
+                    .from("projects")
+                    .delete()
+                    .neq("id",0);
+
+                //
+                // Restore Project
+                //
+
+                if (backup.projects.length) {
+
+                    const { error } = await client
+                        .from("projects")
+                        .insert(backup.projects);
+
+                    if (error) throw error;
+
+                }
+
+                //
+                // Restore Task
+                //
+
+                if (backup.tasks.length) {
+
+                    const { error } = await client
+                        .from("tasks")
+                        .insert(backup.tasks);
+
+                    if (error) throw error;
+
+                }
+
+                showToast(
+                    "Restore berhasil",
+                    "success"
+                );
+
+                refreshAll();
+
+                event.target.value = "";
+
+            }catch(err){
+
+                console.error(err);
+
+                showToast(
+                    err.message,
+                    "danger"
+                );
+
+            }
+
+        }
+    </script>
+
+
+</body>
+</html>
