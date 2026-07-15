@@ -709,7 +709,7 @@ testSupabase();
             const today = new Date().toISOString().split("T")[0];
 
             document.getElementById("statTotalProject").innerText =
-                projects.filter(p => !p.is_archived).length;
+                projects.length;
 
             document.getElementById("statTotalTask").innerText =
                 tasks.length;
@@ -1006,14 +1006,6 @@ style="cursor:pointer;">
             searchTimeout = setTimeout(() => { renderTable(); }, 300);
         }
 
-        function filterByArchive(isArchive) {
-            currentFilterArchive = isArchive;
-            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            
-            document.querySelector('.greeting h1').innerText = isArchive ? "Arsip Project" : "Semua Task";
-            renderTable();
-        }
 
         function resetFilters() {
             document.getElementById('searchInput').value = '';
@@ -1123,6 +1115,10 @@ style="cursor:pointer;">
         
         document.querySelector(".stats-grid").style.display="none";
         
+       document.querySelector(".greeting h1").innerText="Project";
+
+        document.querySelector(".greeting p").innerText=
+        "Kelola seluruh project.";
         }
                 
         function editProject(project) {
@@ -1724,7 +1720,6 @@ document.getElementById("projectPage").style.display="block";
 
 document.getElementById("projectDetailPage").style.display="none";
 
-document.querySelector(".toolbar").style.display="none";
 
 document.querySelector(".stats-grid").style.display="none";
 
