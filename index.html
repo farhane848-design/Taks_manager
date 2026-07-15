@@ -227,9 +227,22 @@ body{display:block;padding-bottom:env(safe-area-inset-bottom);}
         
         <div class="menu-title">Menu Utama</div>
         <ul>
-            <li><a href="#" class="menu-item active"><i class="fa-solid fa-list-check"></i> <span>Semua Task</span></a></li>
-            <li><a href="#" class="menu-item" onclick="filterByArchive(false)"><i class="fa-regular fa-folder"></i> <span>Project Aktif</span></a></li>
-            <li><a href="#" class="menu-item" onclick="filterByArchive(true)"><i class="fa-solid fa-box-archive"></i> <span>Arsip Project</span></a></li>
+            <li>
+                <a href="#"
+                   class="menu-item active"
+                   onclick="showAllTasks(event)">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>Semua Task</span>
+                </a>
+            </li>
+            <li>
+            <a href="#"
+               class="menu-item"
+               onclick="showProjects(event)"><i class="fa-regular fa-folder"></i> <span>Project Aktif</span></a></li>
+            <li>
+            <a href="#"
+               class="menu-item"
+               onclick="showArchive(event)"><i class="fa-solid fa-box-archive"></i> <span>Arsip Project</span></a></li>
         </ul>
 
         <div class="menu-title" style="margin-top:auto;">Lainnya</div>
@@ -1310,6 +1323,51 @@ async function uploadAttachment(file){
             }
 
         }
+        function activateMenu(el){
+
+    document
+        .querySelectorAll(".menu-item")
+        .forEach(m=>m.classList.remove("active"));
+
+    el.classList.add("active");
+
+}
+
+function showAllTasks(event){
+
+    event.preventDefault();
+
+    activateMenu(event.currentTarget);
+
+    document.querySelector(".greeting h1").innerText="Semua Task";
+
+    refreshAll();
+
+}
+
+function showProjects(event){
+
+    event.preventDefault();
+
+    activateMenu(event.currentTarget);
+
+    document.querySelector(".greeting h1").innerText="Project";
+
+    alert("Halaman Project akan dibuat pada tahap berikutnya");
+
+}
+
+function showArchive(event){
+
+    event.preventDefault();
+
+    activateMenu(event.currentTarget);
+
+    document.querySelector(".greeting h1").innerText="Arsip Task";
+
+    alert("Halaman Arsip Task akan dibuat pada tahap berikutnya");
+
+}
     </script>
 
 
