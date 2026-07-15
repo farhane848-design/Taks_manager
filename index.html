@@ -379,6 +379,78 @@ display:flex;
 gap:8px;
 
 }
+    .project-actions{
+
+display:flex;
+
+justify-content:center;
+
+gap:12px;
+
+margin-top:18px;
+
+padding-top:14px;
+
+border-top:1px solid #E5E7EB;
+
+}
+        .project-action{
+
+flex:1;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+gap:8px;
+
+padding:10px 12px;
+
+border:none;
+
+border-radius:12px;
+
+cursor:pointer;
+
+font-size:13px;
+
+font-weight:600;
+
+transition:.2s;
+
+}
+        .edit-action{
+
+background:#EFF6FF;
+
+color:#2563EB;
+
+}
+
+.edit-action:hover{
+
+background:#DBEAFE;
+
+transform:translateY(-2px);
+
+}
+        .delete-action{
+
+background:#FEF2F2;
+
+color:#DC2626;
+
+}
+
+.delete-action:hover{
+
+background:#FEE2E2;
+
+transform:translateY(-2px);
+
+}
     </style>
 </head>
 <body>
@@ -1225,20 +1297,25 @@ ${nearest
 
 </div>
 
-<div
-class="project-actions">
+<div class="project-actions">
 
 <button
+class="project-action edit-action"
 onclick='event.stopPropagation();editProject(${JSON.stringify(p)})'>
 
-✏️
+<i class="fa-solid fa-pen"></i>
+
+<span>Edit</span>
 
 </button>
 
 <button
+class="project-action delete-action"
 onclick="event.stopPropagation();confirmDelete(${p.id},'project')">
 
-🗑️
+<i class="fa-solid fa-trash"></i>
+
+<span>Hapus</span>
 
 </button>
 
