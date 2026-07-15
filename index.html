@@ -892,6 +892,14 @@ testSupabase();
         document.getElementById("projectList");
         
         let html="";
+
+        const pending =
+        tasks.filter(t=>t.project_id==p.id &&
+        t.status=="pending").length;
+        
+        const done =
+        tasks.filter(t=>t.project_id==p.id &&
+        t.status=="done").length;
         
         projects.forEach(p=>{
         
@@ -984,6 +992,11 @@ style="cursor:pointer;">
         
             document.getElementById("detailProjectDesc").innerText =
                 project.description || "";
+            document.querySelector(".greeting h1").innerText =
+            project.name;
+            
+            document.querySelector(".greeting p").innerText =
+            project.description || "";
         
             renderProjectCards(tasks);
             activateMenu(
@@ -1180,14 +1193,18 @@ async function uploadAttachment(file){
 
                 let error;
 
-                if (data.id) {
-
-                    ({ error } = await client
-                        .from("projects")
-                        })
-                        .eq("id", data.id));
-
-                } else {
+            if (data.id) {
+            
+                ({ error } = await client
+                    .from("projects")
+                    .update({
+                        name: data.name,
+                        description: data.description,
+                        color: data.color
+                    })
+                    .eq("id", data.id));
+            
+            } else {
 
                     ({ error } = await client
                         .from("projects")
@@ -1685,6 +1702,9 @@ document.querySelector(".toolbar").style.display="flex";
 
 document.querySelector(".stats-grid").style.display="grid";
 
+document.querySelector(".greeting h1").innerText =
+"Semua Task";
+
 refreshAll();
 
 }
@@ -1696,7 +1716,10 @@ event.preventDefault();
 activateMenu(event.currentTarget);
 
 document.querySelector(".greeting p").innerText =
-"Kelola seluruh project.";
+"Kelola seluruh project."; 
+
+    document.querySelector(".greeting h1").innerText =
+"Project";
 
 document.getElementById("taskPage").style.display="none";
 
@@ -1721,9 +1744,10 @@ function showArchive(event){
 
     document.querySelector(".greeting h1").innerText="Arsip Task";
 
-    alert("Halaman Arsip Task akan dibuat pada tahap berikutnya");
-
-}
+    showToast(
+"Fitur Arsip Task sedang dikembangkan",
+"warning"
+);
     </script>
 
 
