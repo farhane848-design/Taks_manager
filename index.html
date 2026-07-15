@@ -226,30 +226,19 @@ gap:20px;
 
 }
 
-.project-card{.project-card{
-
-background:white;
-
-border-radius:20px;
-
-padding:22px;
-
-cursor:pointer;
-
-transition:.25s;
-
-position:relative;
-
-overflow:hidden;
-
+.project-card{
+    background:white;
+    border-radius:20px;
+    padding:22px;
+    cursor:pointer;
+    transition:.25s;
+    position:relative;
+    overflow:hidden;
 }
 
 .project-card:hover{
-
-transform:translateY(-4px);
-
-box-shadow:0 10px 30px rgba(0,0,0,.08);
-
+    transform:translateY(-4px);
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
 }
 .project-color{
 
@@ -790,13 +779,13 @@ testSupabase();
                 tasks.length;
 
             document.getElementById("statPending").innerText =
-                tasks.filter(t => t.status == "pending").length;
+                tasks.filter(t => t.status == "todo").length;
 
             document.getElementById("statDone").innerText =
                 tasks.filter(t => t.status == "done").length;
 
             document.getElementById("statOverdue").innerText =
-                tasks.filter(t => t.status == "pending" && t.deadline < today).length;
+                tasks.filter(t => t.status == "todo" && t.deadline < today).length;
         }
 
         async function loadProjectDropdown() {
@@ -979,11 +968,7 @@ testSupabase();
 
             const pending =
         tasks.filter(t=>t.project_id==p.id &&
-        t.status=="pending").length;
-        
-        const done =
-        tasks.filter(t=>t.project_id==p.id &&
-        t.status=="done").length;
+        t.status=="todo").length;
             
         const total=
         tasks.filter(t=>t.project_id==p.id).length;
@@ -1017,6 +1002,7 @@ testSupabase();
         new Date(a.deadline)-new Date(b.deadline)
         )[0];
             
+        html += `
         <div
 class="project-card"
 onclick="openProject(${p.id})">
@@ -1026,7 +1012,7 @@ class="project-color"
 style="
 background:${p.color};
 ">
-</div>
+</div>;
 
 <h3>
 
@@ -1554,7 +1540,8 @@ task.status;
                             deadline:data.deadline,
                             description:data.description,
                             attachment:data.attachment,
-                            subtasks:data.subtasks
+                            subtasks:data.subtasks,
+                            status:document.getElementById("taskStatus").value
                         })
                         .eq("id",data.id);
 
