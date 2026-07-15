@@ -566,11 +566,7 @@ gap:8px;
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Status Project</label>
-                    <select id="projectIsArchived" class="form-control">
-                        <option value="0">Aktif (Sedang Berjalan)</option>
-                        <option value="1">Arsip (Selesai/Disimpan)</option>
-                    </select>
+                   
                 </div>
             </div>
             <div class="modal-footer">
@@ -677,7 +673,6 @@ testSupabase();
 
         /* === FRONTEND LOGIC === */
         
-        let currentFilterArchive = false;
 
         // On Load
         document.addEventListener('DOMContentLoaded', () => {
@@ -750,9 +745,7 @@ testSupabase();
 
             data.forEach(p => {
 
-                let text =
-                    p.name +
-                    (p.is_archived ? " (Arsip)" : "");
+                let text = p.name;
 
                 filterHtml +=
                     `<option value="${p.id}">${text}</option>`;
@@ -789,7 +782,7 @@ testSupabase();
             const sortBy = document.getElementById('sortData').value;
 
             // Filter Archive View
-            let allowedProjectIds = projects.filter(p => p.is_archived == (currentFilterArchive ? 1 : 0)).map(p => p.id);
+            let allowedProjectIds =projects.map(p => p.id);
             
             const filteredTasks = tasks.filter(t => {
                 let matchSearch = t.title.toLowerCase().includes(searchQ) || (t.description && t.description.toLowerCase().includes(searchQ));
@@ -1040,7 +1033,6 @@ style="cursor:pointer;">
             document.getElementById('project_id').value = '';
             document.getElementById('projectName').value = '';
             document.getElementById('projectDesc').value = '';
-            document.getElementById('projectIsArchived').value = '0';
             document.getElementById('projectModalTitle').innerText = 'Tambah Project Baru';
             document.getElementById('projectModal').classList.add('active');
         }
@@ -1137,8 +1129,6 @@ style="cursor:pointer;">
     document.getElementById("projectDesc").value =
         project.description || "";
 
-    document.getElementById("projectIsArchived").value =
-        project.is_archived ? "1" : "0";
 
     document.querySelectorAll(".color-btn")
         .forEach(btn => {
@@ -1184,8 +1174,6 @@ async function uploadAttachment(file){
                 name: name,
                 description: document.getElementById('projectDesc').value,
                 color: document.querySelector('.color-btn.active').getAttribute('data-color'),
-                is_archived:
-                document.getElementById("projectIsArchived").value=="1"
             };
 
             try {
@@ -1196,11 +1184,6 @@ async function uploadAttachment(file){
 
                     ({ error } = await client
                         .from("projects")
-                        .update({
-                            name: data.name,
-                            description: data.description,
-                            color: data.color,
-                            is_archived: data.is_archived
                         })
                         .eq("id", data.id));
 
@@ -1209,12 +1192,11 @@ async function uploadAttachment(file){
                     ({ error } = await client
                         .from("projects")
                         .insert([
-                            {
-                                name: data.name,
-                                description: data.description,
-                                color: data.color,
-                                is_archived: data.is_archived
-                            }
+                        {
+                            name: data.name,
+                            description: data.description,
+                            color: data.color
+                        }
                         ]));
 
                 }
@@ -1690,7 +1672,8 @@ event.preventDefault();
 
 activateMenu(event.currentTarget);
 
-document.querySelector(".greeting h1").innerText="Semua Task";
+document.querySelector(".greeting p").innerText =
+"Kelola semua tugas dari berbagai project dalam satu tempat.";
 
 document.getElementById("taskPage").style.display="block";
 
@@ -1712,7 +1695,8 @@ event.preventDefault();
 
 activateMenu(event.currentTarget);
 
-document.querySelector(".greeting h1").innerText="Project";
+document.querySelector(".greeting p").innerText =
+"Kelola seluruh project.";
 
 document.getElementById("taskPage").style.display="none";
 
@@ -1722,6 +1706,8 @@ document.getElementById("projectDetailPage").style.display="none";
 
 
 document.querySelector(".stats-grid").style.display="none";
+
+document.querySelector(".toolbar").style.display="none";
 
 await renderProjects();
 
