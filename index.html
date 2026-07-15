@@ -893,16 +893,18 @@ testSupabase();
         
         let html="";
 
-        const pending =
+        
+        
+        projects.forEach(p=>{
+
+            const pending =
         tasks.filter(t=>t.project_id==p.id &&
         t.status=="pending").length;
         
         const done =
         tasks.filter(t=>t.project_id==p.id &&
         t.status=="done").length;
-        
-        projects.forEach(p=>{
-        
+            
         const total=
         tasks.filter(t=>t.project_id==p.id).length;
         
@@ -1748,6 +1750,7 @@ function showArchive(event){
 "Fitur Arsip Task sedang dikembangkan",
 "warning"
 );
+    }
     </script>
 
 
