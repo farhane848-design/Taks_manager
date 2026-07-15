@@ -1,9 +1,13 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <link
+rel="icon"
+type="image/png"
+href="https://raw.githubusercontent.com/farhane848-design/Taks_manager/d2d7b277258d3dbb3a3f9eee7f7f1708475c04bf/85288801-492e-4b87-8698-834a50576b57.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskFlow - Task Manager</title>
+    <title>TaskFlow | Task Manager by Ersandyf_</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -70,7 +74,70 @@
         }
 
         /* === SIDEBAR === */
-        .brand { display: flex; align-items: center; gap: 12px; font-size: 20px; font-weight: 700; color: var(--primary); margin-bottom: 40px; padding: 0 12px; }
+        .brand{
+
+display:flex;
+
+align-items:center;
+
+gap:14px;
+
+padding:10px 0;
+
+margin-bottom:30px;
+
+}
+        .brand-logo{
+
+width:58px;
+
+height:58px;
+
+object-fit:contain;
+
+flex-shrink:0;
+
+}
+        .brand-text{
+
+display:flex;
+
+flex-direction:column;
+
+}
+        .brand-title{
+
+font-size:24px;
+
+font-weight:800;
+
+color:#2563EB;
+
+line-height:1;
+
+}
+        .brand-subtitle{
+
+font-size:12px;
+
+margin-top:4px;
+
+color:#64748B;
+
+}
+        .brand-author{
+
+font-size:11px;
+
+margin-top:2px;
+
+font-weight:700;
+
+color:#2563EB;
+
+letter-spacing:.5px;
+
+}
         .brand i { font-size: 24px; background: var(--primary); color: white; padding: 6px; border-radius: 8px; }
         .menu-title { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin: 20px 0 10px 12px; letter-spacing: 0.5px; }
         .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: var(--radius-sm); color: var(--text-muted); font-weight: 500; margin-bottom: 4px; }
@@ -317,11 +384,30 @@ gap:8px;
 <body>
 
     <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="brand">
-            <i class="fa-solid fa-check-double"></i>
-            <div>TaskFlow<br><span style="font-size:10px; font-weight:500; color:var(--text-muted);">Task Manager</span></div>
+    <div class="brand">
+
+    <img
+        src="https://raw.githubusercontent.com/farhane848-design/Taks_manager/d2d7b277258d3dbb3a3f9eee7f7f1708475c04bf/85288801-492e-4b87-8698-834a50576b57.png"
+        class="brand-logo"
+        alt="TaskFlow Logo">
+
+    <div class="brand-text">
+
+        <div class="brand-title">
+            TaskFlow
         </div>
+
+        <div class="brand-subtitle">
+            Task Manager
+        </div>
+
+        <div class="brand-author">
+            by Ersandyf_
+        </div>
+
+    </div>
+
+</div>
         
         <div class="menu-title">Menu Utama</div>
         <ul>
