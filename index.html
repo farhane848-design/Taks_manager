@@ -194,6 +194,7 @@
             .filters { flex-wrap: wrap; }
             .table-container { overflow-x: auto; }
         }    
+        
 
 /* ===== Improved Mobile Layout ===== */
 @media (max-width:768px){
@@ -214,7 +215,79 @@ body{display:block;padding-bottom:env(safe-area-inset-bottom);}
 .modal{width:95%;max-height:90vh;}
 .modal-body{overflow:auto;}
 }
-</style>
+.project-grid{
+
+display:grid;
+
+grid-template-columns:
+repeat(auto-fill,minmax(280px,1fr));
+
+gap:20px;
+
+}
+
+.project-card{
+
+background:white;
+
+border-radius:18px;
+
+padding:20px;
+
+box-shadow:var(--shadow);
+
+transition:.2s;
+
+}
+
+.project-card:hover{
+
+transform:translateY(-3px);
+
+}
+
+.project-title{
+
+font-size:18px;
+
+font-weight:700;
+
+margin-bottom:8px;
+
+}
+
+.project-desc{
+
+font-size:13px;
+
+color:var(--text-muted);
+
+margin-bottom:20px;
+
+min-height:40px;
+
+}
+
+.project-footer{
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+margin-top:20px;
+
+}
+
+.project-actions{
+
+display:flex;
+
+gap:8px;
+
+}
+    </style>
 </head>
 <body>
 
@@ -346,6 +419,7 @@ body{display:block;padding-bottom:env(safe-area-inset-bottom);}
         </section>
 
         <!-- TABLE -->
+        <div id="taskPage">
         <section class="table-container">
             <table>
                 <thead>
@@ -364,6 +438,28 @@ body{display:block;padding-bottom:env(safe-area-inset-bottom);}
                 </tbody>
             </table>
         </section>
+        </div>
+        <h2>Daftar Project</h2>
+
+        <button
+            class="btn btn-primary"
+            onclick="openProjectModal()">
+
+            <i class="fa-solid fa-folder-plus"></i>
+
+            Tambah Project
+
+        </button>
+
+    </div>
+
+    <div
+        id="projectList"
+        class="project-grid">
+
+    </div>
+
+</div>
     </main>
 
     <!-- TOAST CONTAINER -->
@@ -714,6 +810,84 @@ testSupabase();
             });
 
             tableBody.innerHTML = html;
+        }
+        async function renderProjects(){
+
+        const {data:projects}=await client
+        .from("projects")
+        .select("*")
+        .order("id");
+        
+        const {data:tasks}=await client
+        .from("tasks")
+        .select("*");
+        
+        const container=
+        document.getElementById("projectList");
+        
+        let html="";
+        
+        projects.forEach(p=>{
+        
+        const total=
+        tasks.filter(t=>t.project_id==p.id).length;
+        
+        html+=`
+        
+        <div class="project-card">
+        
+        <div
+        class="project-title">
+        
+        📁 ${p.name}
+        
+        </div>
+        
+        <div
+        class="project-desc">
+        
+        ${p.description||"-"}
+        
+        </div>
+        
+        <div class="project-footer">
+        
+        <div>
+        
+        ${total} Task
+        
+        </div>
+        
+        <div class="project-actions">
+        
+        <button
+        class="action-btn"
+        onclick='editProject(${JSON.stringify(p)})'>
+        
+        <i class="fa-solid fa-pen"></i>
+        
+        </button>
+        
+        <button
+        class="action-btn"
+        onclick="confirmDelete(${p.id},'project')">
+        
+        <i class="fa-solid fa-trash"></i>
+        
+        </button>
+        
+        </div>
+        
+        </div>
+        
+        </div>
+        
+        `;
+        
+        });
+        
+        container.innerHTML=html;
+        
         }
 
         // --- Event Handlers ---
@@ -1335,25 +1509,41 @@ async function uploadAttachment(file){
 
 function showAllTasks(event){
 
-    event.preventDefault();
+event.preventDefault();
 
-    activateMenu(event.currentTarget);
+activateMenu(event.currentTarget);
 
-    document.querySelector(".greeting h1").innerText="Semua Task";
+document.querySelector(".greeting h1").innerText="Semua Task";
 
-    refreshAll();
+document.getElementById("taskPage").style.display="block";
+
+document.getElementById("projectPage").style.display="none";
+
+document.querySelector(".toolbar").style.display="flex";
+
+document.querySelector(".stats-grid").style.display="grid";
+
+refreshAll();
 
 }
 
-function showProjects(event){
+async function showProjects(event){
 
-    event.preventDefault();
+event.preventDefault();
 
-    activateMenu(event.currentTarget);
+activateMenu(event.currentTarget);
 
-    document.querySelector(".greeting h1").innerText="Project";
+document.querySelector(".greeting h1").innerText="Project";
 
-    alert("Halaman Project akan dibuat pada tahap berikutnya");
+document.getElementById("taskPage").style.display="none";
+
+document.getElementById("projectPage").style.display="block";
+
+document.querySelector(".toolbar").style.display="none";
+
+document.querySelector(".stats-grid").style.display="none";
+
+await renderProjects();
 
 }
 
