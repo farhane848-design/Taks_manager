@@ -384,30 +384,33 @@ gap:8px;
 <body>
 
     <!-- SIDEBAR -->
+    <!-- SIDEBAR -->
+<aside class="sidebar">
+
     <div class="brand">
 
-    <img
-        src="https://raw.githubusercontent.com/farhane848-design/Taks_manager/d2d7b277258d3dbb3a3f9eee7f7f1708475c04bf/85288801-492e-4b87-8698-834a50576b57.png"
-        class="brand-logo"
-        alt="TaskFlow Logo">
+        <img
+            src="https://raw.githubusercontent.com/farhane848-design/Taks_manager/d2d7b277258d3dbb3a3f9eee7f7f1708475c04bf/85288801-492e-4b87-8698-834a50576b57.png"
+            class="brand-logo"
+            alt="TaskFlow Logo">
 
-    <div class="brand-text">
+        <div class="brand-text">
 
-        <div class="brand-title">
-            TaskFlow
-        </div>
+            <div class="brand-title">
+                TaskFlow
+            </div>
 
-        <div class="brand-subtitle">
-            Task Manager
-        </div>
+            <div class="brand-subtitle">
+                Task Manager
+            </div>
 
-        <div class="brand-author">
-            by Ersandyf_
+            <div class="brand-author">
+                by Ersandyf_
+            </div>
+
         </div>
 
     </div>
-
-</div>
         
         <div class="menu-title">Menu Utama</div>
         <ul>
@@ -993,7 +996,17 @@ testSupabase();
                     progress = `<div style="font-size:11px; margin-top:4px; color:var(--text-muted);"><i class="fa-solid fa-list-check"></i> ${pct}% (${doneC}/${t.subtasks.length})</div>`;
                 }
 
-                let statusHtml = t.status === 'pending' 
+                if(t.status=="todo"){
+
+}
+
+else if(t.status=="progress"){
+
+}
+
+else{
+
+}
                     ? `<span class="badge warning status-toggle" onclick="toggleStatus(${t.id}, 'done')"><i class="fa-regular fa-circle"></i> Belum</span>`
                     : `<span class="badge success status-toggle" onclick="toggleStatus(${t.id}, 'pending')"><i class="fa-solid fa-check-circle"></i> Selesai</span>`;
 
@@ -1098,7 +1111,7 @@ class="project-color"
 style="
 background:${p.color};
 ">
-</div>;
+</div>
 
 <h3>
 
@@ -1338,7 +1351,6 @@ onclick="event.stopPropagation();confirmDelete(${p.id},'project')">
         
                         </span>
         
-                    </div>
         
                 </div>`;
             });
