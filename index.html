@@ -393,9 +393,11 @@ gap:8px;
                 </div>
             </div>
         </section>
+        <div id="taskPage">
 
         <!-- TOOLBAR (Filters & Actions) -->
-        <section class="toolbar">
+        <div id="taskPage">
+            <section class="toolbar">
             <div class="filters">
                 <select class="filter-select" id="filterProject" onchange="renderTable()">
                     <option value="">Semua Project</option>
@@ -417,9 +419,10 @@ gap:8px;
                 <button class="btn btn-primary" onclick="openTaskModal()"><i class="fa-solid fa-plus"></i> Tambah Task</button>
             </div>
         </section>
+         </div>
 
         <!-- TABLE -->
-        </div>
+        
 
 <!-- PROJECT PAGE -->
 <div id="projectPage" style="display:none;">
@@ -941,6 +944,9 @@ style="cursor:pointer;">
                 project.description || "";
         
             renderProjectCards(tasks);
+            activateMenu(
+            document.querySelectorAll(".menu-item")[1]
+            );
         
         }
 
@@ -1060,9 +1066,13 @@ style="cursor:pointer;">
         }
         function backToProjects(){
 
-            document.getElementById("projectDetailPage").style.display="none";
+        document.getElementById("projectDetailPage").style.display="none";
         
-            document.getElementById("projectPage").style.display="block";
+        document.getElementById("projectPage").style.display="block";
+        
+        document.querySelector(".toolbar").style.display="none";
+        
+        document.querySelector(".stats-grid").style.display="none";
         
         }
                 
@@ -1641,6 +1651,8 @@ document.getElementById("taskPage").style.display="block";
 
 document.getElementById("projectPage").style.display="none";
 
+document.getElementById("projectDetailPage").style.display="none";
+
 document.querySelector(".toolbar").style.display="flex";
 
 document.querySelector(".stats-grid").style.display="grid";
@@ -1660,6 +1672,8 @@ document.querySelector(".greeting h1").innerText="Project";
 document.getElementById("taskPage").style.display="none";
 
 document.getElementById("projectPage").style.display="block";
+
+document.getElementById("projectDetailPage").style.display="none";
 
 document.querySelector(".toolbar").style.display="none";
 
