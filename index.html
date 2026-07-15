@@ -226,26 +226,62 @@ gap:20px;
 
 }
 
-.project-card{
+.project-card{.project-card{
 
 background:white;
 
-border-radius:18px;
+border-radius:20px;
 
-padding:20px;
+padding:22px;
 
-box-shadow:var(--shadow);
+cursor:pointer;
 
-transition:.2s;
+transition:.25s;
+
+position:relative;
+
+overflow:hidden;
 
 }
 
 .project-card:hover{
 
-transform:translateY(-3px);
+transform:translateY(-4px);
+
+box-shadow:0 10px 30px rgba(0,0,0,.08);
 
 }
+.project-color{
 
+height:8px;
+
+width:100%;
+
+border-radius:10px;
+
+margin-bottom:18px;
+
+}
+.progress-bar{
+
+height:8px;
+
+background:#eef2ff;
+
+border-radius:20px;
+
+overflow:hidden;
+
+margin:15px 0;
+
+}
+.progress-fill{
+
+height:100%;
+
+transition:.3s;
+
+}
 .project-title{
 
 font-size:18px;
@@ -403,8 +439,23 @@ gap:8px;
                 </select>
                 <select class="filter-select" id="filterStatus" onchange="renderTable()">
                     <option value="">Semua Status</option>
-                    <option value="pending">Belum Selesai</option>
-                    <option value="done">Selesai</option>
+                    <option value="todo">
+
+Todo
+
+</option>
+
+<option value="progress">
+
+Progress
+
+</option>
+
+<option value="done">
+
+Done
+
+</option>
                 </select>
                 <select class="filter-select" id="sortData" onchange="renderTable()">
                     <option value="deadline_asc">Deadline Terdekat</option>
@@ -597,6 +648,35 @@ gap:8px;
                     <label>Deadline *</label>
                     <input type="date" id="taskDeadline" class="form-control" required>
                 </div>
+                <label>
+
+                Status
+                
+                </label>
+                
+                <select
+                id="taskStatus"
+                class="form-control">
+                
+                <option value="todo">
+                
+                Todo
+                
+                </option>
+                
+                <option value="progress">
+                
+                Progress
+                
+                </option>
+                
+                <option value="done">
+                
+                Done
+                
+                </option>
+                
+                </select>
                 <div class="form-group">
                     <label>Uraian / Deskripsi</label>
                     <textarea id="taskDesc" class="form-control" rows="2"></textarea>
@@ -907,57 +987,151 @@ testSupabase();
             
         const total=
         tasks.filter(t=>t.project_id==p.id).length;
+        const todo =
+        tasks.filter(
+        t=>t.project_id==p.id &&
+        t.status=="todo"
+        ).length;
         
-        html+=`
+        const progress =
+        tasks.filter(
+        t=>t.project_id==p.id &&
+        t.status=="progress"
+        ).length;
         
+        const done =
+        tasks.filter(
+        t=>t.project_id==p.id &&
+        t.status=="done"
+        ).length;
+        
+        const percent =
+        total==0
+        ?0
+        :Math.round(done/total*100);
+        
+        const nearest =
+        tasks
+        .filter(t=>t.project_id==p.id)
+        .sort((a,b)=>
+        new Date(a.deadline)-new Date(b.deadline)
+        )[0];
+            
         <div
 class="project-card"
-onclick="openProject(${p.id})"
-style="cursor:pointer;">
-        
-        <div
-        class="project-title">
-        
-        📁 ${p.name}
-        
-        </div>
-        
-        <div
-        class="project-desc">
-        
-        ${p.description||"-"}
-        
-        </div>
-        
-        <div class="project-footer">
-        
-        <div>
-        
-        ${total} Task
-        
-        </div>
-        
-        <div class="project-actions">
+onclick="openProject(${p.id})">
 
-        <button
-        class="action-btn"
-        onclick='event.stopPropagation();editProject(${JSON.stringify(p)})'>
-        
-        <i class="fa-solid fa-pen"></i>
-        
-        </button>
-        
-        <button
-        class="action-btn"
-        onclick="event.stopPropagation();confirmDelete(${p.id},'project')">
-        
-        <i class="fa-solid fa-trash"></i>
-        
-        </button>
-        
-        </div>
-        
-        </div>
+<div
+class="project-color"
+style="
+background:${p.color};
+">
+</div>
+
+<h3>
+
+${p.name}
+
+</h3>
+
+<p>
+
+${p.description||"-"}
+
+</p>
+
+<div class="progress-bar">
+
+<div
+class="progress-fill"
+style="
+width:${percent}%;
+background:${p.color};
+">
+
+</div>
+
+</div>
+
+<div
+style="
+font-weight:600;
+margin-bottom:10px;
+">
+
+${percent}%
+
+</div>
+
+<div>
+
+Todo :
+<b>
+
+${todo}
+
+</b>
+
+</div>
+
+<div>
+
+Progress :
+
+<b>
+
+${progress}
+
+</b>
+
+</div>
+
+<div>
+
+Done :
+
+<b>
+
+${done}
+
+</b>
+
+</div>
+
+<div
+style="
+margin-top:10px;
+color:gray;
+">
+
+📅
+
+${nearest
+?nearest.deadline
+:"-"}
+
+</div>
+
+<div
+class="project-actions">
+
+<button
+onclick='event.stopPropagation();editProject(${JSON.stringify(p)})'>
+
+✏️
+
+</button>
+
+<button
+onclick="event.stopPropagation();confirmDelete(${p.id},'project')">
+
+🗑️
+
+</button>
+
+</div>
+
+</div>
         
         </div>
         
@@ -1276,6 +1450,10 @@ async function uploadAttachment(file){
             document.getElementById('taskTitle').value = task.title;
             document.getElementById('taskDeadline').value = task.deadline;
             document.getElementById('taskDesc').value = task.description;
+            document
+.getElementById("taskStatus")
+.value=
+task.status;
             
             if(task.attachment){
 
@@ -1386,7 +1564,10 @@ async function uploadAttachment(file){
 
                     delete data.id;
 
-                    data.status="pending";
+                    data.status=
+document
+.getElementById("taskStatus")
+.value;
 
                     const { error } = await client
                         .from("tasks")
