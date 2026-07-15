@@ -36,7 +36,21 @@
 
         /* === RESET & BASE === */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--background); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+        body{
+            overflow:hidden;
+        }
+
+        .sidebar{
+            position:sticky;
+            top:0;
+            height:100vh;
+            overflow-y:auto;
+        }
+
+        .main-content{
+            height:100vh;
+            overflow-y:auto;
+        }
         button { cursor: pointer; border: none; background: none; font-family: inherit; transition: var(--transition); }
         input, select, textarea { font-family: inherit; outline: none; transition: var(--transition); }
         ul { list-style: none; }
