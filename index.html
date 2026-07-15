@@ -392,10 +392,9 @@ gap:8px;
                     <p id="statOverdue">0</p>
                 </div>
             </div>
-        </section>
-        <div id="taskPage">
 
         <!-- TOOLBAR (Filters & Actions) -->
+        </section>
         <div id="taskPage">
             <section class="toolbar">
             <div class="filters">
@@ -419,10 +418,60 @@ gap:8px;
                 <button class="btn btn-primary" onclick="openTaskModal()"><i class="fa-solid fa-plus"></i> Tambah Task</button>
             </div>
         </section>
-         </div>
 
-        <!-- TABLE -->
-        
+<!-- TABLE -->
+
+<section class="table-container">
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th width="50"></th>
+
+                <th>Task</th>
+
+                <th>Project</th>
+
+                <th>Deadline</th>
+
+                <th>Status</th>
+
+                <th>Lampiran</th>
+
+                <th width="100">Aksi</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody id="taskTableBody">
+
+            <tr>
+
+                <td colspan="7">
+
+                    <div class="empty-state">
+
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+
+                        <p>Memuat data...</p>
+
+                    </div>
+
+                </td>
+
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</section>
+
+</div>
 
 <!-- PROJECT PAGE -->
 <div id="projectPage" style="display:none;">
