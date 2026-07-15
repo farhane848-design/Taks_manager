@@ -311,11 +311,11 @@ gap:8px;
             <li>
             <a href="#"
                class="menu-item"
-               onclick="showProjects(event)"><i class="fa-regular fa-folder"></i> <span>Project Aktif</span></a></li>
+               onclick="showProjects(event)"><i class="fa-regular fa-folder"></i> <span>Project</span></a></li>
             <li>
             <a href="#"
                class="menu-item"
-               onclick="showArchive(event)"><i class="fa-solid fa-box-archive"></i> <span>Arsip Project</span></a></li>
+               onclick="showArchive(event)"><i class="fa-solid fa-box-archive"></i> <span>Arsip Task</span></a></li>
         </ul>
 
         <div class="menu-title" style="margin-top:auto;">Lainnya</div>
@@ -419,26 +419,17 @@ gap:8px;
         </section>
 
         <!-- TABLE -->
-        <div id="taskPage">
-        <section class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th width="40"><i class="fa-solid fa-check-square"></i></th>
-                        <th>Task & Uraian</th>
-                        <th>Project</th>
-                        <th>Deadline</th>
-                        <th>Status</th>
-                        <th>Lampiran</th>
-                        <th width="80">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="taskTableBody">
-                    <!-- Data will be rendered here via JS -->
-                </tbody>
-            </table>
-        </section>
         </div>
+
+<!-- PROJECT PAGE -->
+<div id="projectPage" style="display:none;">
+
+    <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        margin-bottom:20px;">
+
         <h2>Daftar Project</h2>
 
         <button
@@ -458,6 +449,36 @@ gap:8px;
         class="project-grid">
 
     </div>
+
+</div>
+<!-- PROJECT DETAIL -->
+<div id="projectDetailPage" style="display:none;">
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+
+        <button class="btn btn-outline" onclick="backToProjects()">
+            <i class="fa-solid fa-arrow-left"></i>
+            Kembali
+        </button>
+
+        <button class="btn btn-primary" onclick="openTaskModal()">
+            <i class="fa-solid fa-plus"></i>
+            Tambah Task
+        </button>
+
+    </div>
+
+    <h2 id="detailProjectTitle"></h2>
+
+    <p id="detailProjectDesc"
+       style="margin:10px 0 24px;color:var(--text-muted);">
+    </p>
+
+    <div id="projectTaskCards"
+         class="project-grid">
+    </div>
+
+</div>
 
 </div>
     </main>
@@ -894,31 +915,32 @@ style="cursor:pointer;">
         }
 
         async function openProject(projectId){
+
+            const {data:project}=await client
+                .from("projects")
+                .select("*")
+                .eq("id",projectId)
+                .single();
         
-        document.getElementById("projectPage").style.display="none";
+            const {data:tasks}=await client
+                .from("tasks")
+                .select("*")
+                .eq("project_id",projectId);
         
-        document.getElementById("taskPage").style.display="block";
+            document.getElementById("projectPage").style.display="none";
+            document.getElementById("taskPage").style.display="none";
+            document.getElementById("projectDetailPage").style.display="block";
         
-        document.querySelector(".toolbar").style.display="flex";
+            document.querySelector(".toolbar").style.display="none";
+            document.querySelector(".stats-grid").style.display="none";
         
-        document.querySelector(".stats-grid").style.display="none";
+            document.getElementById("detailProjectTitle").innerText =
+                project.name;
         
-        const {data:project}=await client
-        .from("projects")
-        .select("*")
-        .eq("id",projectId)
-        .single();
+            document.getElementById("detailProjectDesc").innerText =
+                project.description || "";
         
-        document.querySelector(".greeting h1").innerText=
-        project.name;
-        
-        document.querySelector(".greeting p").innerText=
-        project.description||"";
-        
-        document.getElementById("filterProject").value=
-        projectId;
-        
-        renderTable();
+            renderProjectCards(tasks);
         
         }
 
@@ -975,7 +997,75 @@ style="cursor:pointer;">
             document.getElementById('projectModalTitle').innerText = 'Tambah Project Baru';
             document.getElementById('projectModal').classList.add('active');
         }
+        function renderProjectCards(tasks){
+        
+            const container =
+                document.getElementById("projectTaskCards");
+        
+            let html = "";
+        
+            tasks.forEach(task=>{
+        
+                html += `
+                <div class="project-card">
+        
+                    <h3>${task.title}</h3>
+        
+                    <p style="margin:12px 0;color:gray;">
+                        ${task.description || "-"}
+                    </p>
+        
+                    <div style="
+                        display:flex;
+                        justify-content:space-between;
+                        align-items:center;">
+        
+                        <span>
+                            📅 ${task.deadline}
+                        </span>
+        
+                        <span class="badge ${
+                            task.status=="done"
+                                ? "success"
+                                : "warning"
+                        }">
+        
+                            ${
+                                task.status=="done"
+                                    ? "Selesai"
+                                    : "Belum"
+                            }
+        
+                        </span>
+        
+                    </div>
+        
+                </div>`;
+            });
+        
+            if(tasks.length===0){
+        
+                html=`
+                <div class="empty-state">
+        
+                    <i class="fa-solid fa-folder-open"></i>
+        
+                    <p>Belum ada task.</p>
+        
+                </div>`;
+            }
+        
+            container.innerHTML = html;
+        
+        }
+        function backToProjects(){
 
+            document.getElementById("projectDetailPage").style.display="none";
+        
+            document.getElementById("projectPage").style.display="block";
+        
+        }
+                
         function editProject(project) {
 
     document.getElementById("projectModal").classList.add("active");
