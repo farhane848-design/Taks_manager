@@ -4,7 +4,7 @@
     <link
 rel="icon"
 type="image/png"
-href="https://raw.githubusercontent.com/farhane848-design/Taks_manager/d2d7b277258d3dbb3a3f9eee7f7f1708475c04bf/85288801-492e-4b87-8698-834a50576b57.png">
+href="https://raw.githubusercontent.com/farhane848-design/Taks_manager/74f01bd8aa23e10be3d4b71b0e0ad4b1578e0216/85288801-492e-4b87-8698-834a50576b57.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TaskFlow | Task Manager by Ersandyf_</title>
@@ -389,8 +389,8 @@ gap:8px;
 
     <div class="brand">
 
-        <img
-            src="https://raw.githubusercontent.com/farhane848-design/Taks_manager/d2d7b277258d3dbb3a3f9eee7f7f1708475c04bf/85288801-492e-4b87-8698-834a50576b57.png"
+        <link rel="icon"
+href="https://raw.githubusercontent.com/farhane848-design/Taks_manager/74f01bd8aa23e10be3d4b71b0e0ad4b1578e0216/85288801-492e-4b87-8698-834a50576b57.png">
             class="brand-logo"
             alt="TaskFlow Logo">
 
@@ -996,24 +996,53 @@ testSupabase();
                     progress = `<div style="font-size:11px; margin-top:4px; color:var(--text-muted);"><i class="fa-solid fa-list-check"></i> ${pct}% (${doneC}/${t.subtasks.length})</div>`;
                 }
 
-                if(t.status=="todo"){
+let statusHtml = "";
+
+if (t.status === "todo") {
+
+    statusHtml = `
+        <span class="badge warning status-toggle"
+              onclick="toggleStatus(${t.id}, 'progress')">
+            <i class="fa-regular fa-circle"></i>
+            Todo
+        </span>`;
+
+} else if (t.status === "progress") {
+
+    statusHtml = `
+        <span class="badge status-toggle"
+              style="background:#DBEAFE;color:#2563EB;"
+              onclick="toggleStatus(${t.id}, 'done')">
+            <i class="fa-solid fa-spinner"></i>
+            Progress
+        </span>`;
+
+} else {
+
+    statusHtml = `
+        <span class="badge success status-toggle"
+              onclick="toggleStatus(${t.id}, 'todo')">
+            <i class="fa-solid fa-check-circle"></i>
+            Done
+        </span>`;
 
 }
-
-else if(t.status=="progress"){
-
-}
-
-else{
-
-}
-                    ? `<span class="badge warning status-toggle" onclick="toggleStatus(${t.id}, 'done')"><i class="fa-regular fa-circle"></i> Belum</span>`
-                    : `<span class="badge success status-toggle" onclick="toggleStatus(${t.id}, 'pending')"><i class="fa-solid fa-check-circle"></i> Selesai</span>`;
 
                 html += `
                     <tr>
-                        <td><input type="checkbox" class="custom-checkbox" ${t.status === 'done' ? 'checked' : ''} onclick="toggleStatus(${t.id}, '${t.status === 'pending' ? 'done' : 'pending'}')"></td>
                         <td>
+    <input
+        type="checkbox"
+        class="custom-checkbox"
+        ${t.status === 'done' ? 'checked' : ''}
+        onclick="toggleStatus(${t.id}, '${
+            t.status === 'todo'
+                ? 'progress'
+                : t.status === 'progress'
+                    ? 'done'
+                    : 'todo'
+        }')">
+</td>
                             <div class="task-title-cell">
                                 <span class="task-title">${t.title}</span>
                                 ${t.description ? `<span class="task-description">${t.description}</span>` : ''}
@@ -1136,7 +1165,6 @@ background:${p.color};
 
 </div>
 
-</div>
 
 <div
 style="
