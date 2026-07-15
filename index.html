@@ -834,7 +834,10 @@ testSupabase();
         
         html+=`
         
-        <div class="project-card">
+        <div
+class="project-card"
+onclick="openProject(${p.id})"
+style="cursor:pointer;">
         
         <div
         class="project-title">
@@ -859,10 +862,10 @@ testSupabase();
         </div>
         
         <div class="project-actions">
-        
+
         <button
         class="action-btn"
-        onclick='editProject(${JSON.stringify(p)})'>
+        onclick='event.stopPropagation();editProject(${JSON.stringify(p)})'>
         
         <i class="fa-solid fa-pen"></i>
         
@@ -870,7 +873,7 @@ testSupabase();
         
         <button
         class="action-btn"
-        onclick="confirmDelete(${p.id},'project')">
+        onclick="event.stopPropagation();confirmDelete(${p.id},'project')">
         
         <i class="fa-solid fa-trash"></i>
         
@@ -887,6 +890,35 @@ testSupabase();
         });
         
         container.innerHTML=html;
+        
+        }
+
+        async function openProject(projectId){
+        
+        document.getElementById("projectPage").style.display="none";
+        
+        document.getElementById("taskPage").style.display="block";
+        
+        document.querySelector(".toolbar").style.display="flex";
+        
+        document.querySelector(".stats-grid").style.display="none";
+        
+        const {data:project}=await client
+        .from("projects")
+        .select("*")
+        .eq("id",projectId)
+        .single();
+        
+        document.querySelector(".greeting h1").innerText=
+        project.name;
+        
+        document.querySelector(".greeting p").innerText=
+        project.description||"";
+        
+        document.getElementById("filterProject").value=
+        projectId;
+        
+        renderTable();
         
         }
 
