@@ -7,7 +7,7 @@ type="image/png"
 href="https://raw.githubusercontent.com/farhane848-design/Taks_manager/74f01bd8aa23e10be3d4b71b0e0ad4b1578e0216/85288801-492e-4b87-8698-834a50576b57.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskFlow | Task Manager by Ersandyf_</title>
+    <title>TaskFlow | Task Manager by ersandyf_</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -389,10 +389,10 @@ gap:8px;
 
     <div class="brand">
 
-        <link rel="icon"
-href="https://raw.githubusercontent.com/farhane848-design/Taks_manager/74f01bd8aa23e10be3d4b71b0e0ad4b1578e0216/85288801-492e-4b87-8698-834a50576b57.png">
-            class="brand-logo"
-            alt="TaskFlow Logo">
+    <img
+        src="https://raw.githubusercontent.com/farhane848-design/Taks_manager/74f01bd8aa23e10be3d4b71b0e0ad4b1578e0216/85288801-492e-4b87-8698-834a50576b57.png"
+        class="brand-logo"
+        alt="TaskFlow Logo">
 
         <div class="brand-text">
 
@@ -405,7 +405,7 @@ href="https://raw.githubusercontent.com/farhane848-design/Taks_manager/74f01bd8a
             </div>
 
             <div class="brand-author">
-                by Ersandyf_
+                by ersandyf_
             </div>
 
         </div>
@@ -1042,7 +1042,7 @@ if (t.status === "todo") {
                     ? 'done'
                     : 'todo'
         }')">
-</td>
+<td>
                             <div class="task-title-cell">
                                 <span class="task-title">${t.title}</span>
                                 ${t.description ? `<span class="task-description">${t.description}</span>` : ''}
@@ -1158,12 +1158,12 @@ ${p.description||"-"}
 
 <div
 class="progress-fill"
-style="
-width:${percent}%;
-background:${p.color};
-">
+style="width:${percent}%;background:${p.color};">
+</div>
 
 </div>
+
+<div style="font-weight:600">
 
 
 <div
@@ -1365,19 +1365,30 @@ onclick="event.stopPropagation();confirmDelete(${p.id},'project')">
                             📅 ${task.deadline}
                         </span>
         
-                        <span class="badge ${
-                            task.status=="done"
-                                ? "success"
-                                : "warning"
-                        }">
-        
-                            ${
-                                task.status=="done"
-                                    ? "Selesai"
-                                    : "Belum"
-                            }
-        
-                        </span>
+                        <span
+class="badge
+${
+task.status==="done"
+?"success"
+:
+task.status==="progress"
+?""
+:"warning"
+}"
+style="${
+task.status==="progress"
+?"background:#DBEAFE;color:#2563EB;"
+:""
+}">
+${
+task.status==="done"
+?"Done"
+:
+task.status==="progress"
+?"Progress"
+:"Todo"
+}
+</span>
         
         
                 </div>`;
