@@ -1352,36 +1352,32 @@ testSupabase();
 
         // On Load
         document.addEventListener('DOMContentLoaded', () => {
-            refreshAll();
+            await refreshAll();
         });
 
        async function refreshAll(){
 
-await Promise.all([
-loadStats(),
-loadProjectDropdown(),
-renderTable()
-]);
+    await Promise.all([
+        loadStats(),
+        loadProjectDropdown(),
+        renderTable()
+    ]);
 
-if(
-document.getElementById("projectPage")
-.style.display=="block"
-){
+    if(document.getElementById("projectPage").style.display==="block"){
+        await renderProjects();
+    }
 
-await renderProjects();
+    if(document.getElementById("archivePage").style.display==="block"){
+        await renderArchive();
+    }
 
+if (
+    currentProjectId &&
+    document.getElementById("projectDetailPage").style.display === "block"
+) {
+    await openProject(currentProjectId);
 }
-
-if(
-document.getElementById("archivePage")
-.style.display=="block"
-){
-
-await renderArchive();
-
-}
-
-}
+       }
 
 if(
 
@@ -1795,7 +1791,7 @@ if (t.status === "todo") {
         async function renderProjects(){
 
         const {data:projects}=await client
-       ..from("projects")
+       .from("projects")
 .select("*")
 .eq("archived", false)
         .order("id");
@@ -2109,6 +2105,8 @@ if(
             document.getElementById('projectModal').classList.add('active');
         }
         function renderProjectCards(tasks){
+        
+            const container=document.getElementById("projectTaskCards");
 
 if(tasks.length===0){
 
@@ -2148,7 +2146,6 @@ Tambah Task
 return;
 
 }
-            const container=document.getElementById("projectTaskCards");
 
 let html="";
 
@@ -2181,161 +2178,7 @@ ${task.description || "-"}
 container.innerHTML=html;
 
 }
-    </div>
-
-    <div class="project-body">
-
-        <h3 class="project-title">${p.name}</h3>
-
-        <p class="project-desc">
-            ${p.description || "Tidak ada deskripsi"}
-        </p>
-
-        <div class="project-progress-header">
-
-            <span>${done}/${total} Task selesai</span>
-
-            <strong>${percent}%</strong>
-
-        </div>
-
-        <div class="progress">
-
-            <div
-                class="progress-fill"
-                style="
-                width:${percent}%;
-                background:${p.color};
-                ">
-            </div>
-
-        </div>
-
-        <div class="project-stat">
-
-            <div>
-
-                <small>Todo</small>
-
-                <strong>${todo}</strong>
-
-            </div>
-
-            <div>
-
-                <small>Progress</small>
-
-                <strong>${progress}</strong>
-
-            </div>
-
-            <div>
-
-                <small>Done</small>
-
-                <strong>${done}</strong>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <div class="project-footer">
-
-        <div class="project-date">
-
-            <i class="fa-regular fa-calendar"></i>
-
-            ${deadline}
-
-        </div>
-
-        <div class="project-action-group">
-
-            <button
-                class="btn-edit"
-                onclick="editProject(${p.id})">
-
-                <i class="fa-solid fa-pen"></i>
-
-                Edit
-
-            </button>
-
-            <button
-                class="btn-delete"
-                onclick="confirmDelete(${p.id},'project')">
-
-                <i class="fa-solid fa-trash"></i>
-
-                Arsip
-
-            </button>
-
-        </div>
-
-    </div>
-
-</div>
-        
-                    <h3>${task.title}</h3>
-        
-                    <p style="margin:12px 0;color:gray;">
-                        ${task.description || "-"}
-                    </p>
-        
-                    <div style="
-                        display:flex;
-                        justify-content:space-between;
-                        align-items:center;">
-        
-                        <span>
-                            📅 ${task.deadline}
-                        </span>
-        
-                        <span
-class="badge
-${
-task.status==="done"
-?"success"
-:
-task.status==="progress"
-?""
-:"warning"
-}"
-style="${
-task.status==="progress"
-?"background:#DBEAFE;color:#2563EB;"
-:""
-}">
-${
-task.status==="done"
-?"Done"
-:
-task.status==="progress"
-?"Progress"
-:"Todo"
-}
-</span>
-        
-        
-                </div>`;
-            });
-        
-            if(tasks.length===0){
-        
-                html=`
-                <div class="empty-state">
-        
-                    <i class="fa-solid fa-folder-open"></i>
-        
-                    <p>Belum ada task.</p>
-        
-                </div>`;
-            }
-        
-           
+   
         function backToProjects(){
 
         document.getElementById("projectDetailPage").style.display="none";
@@ -2457,7 +2300,7 @@ async function uploadAttachment(file){
 
                 closeModal("projectModal");
 
-                refreshAll();
+                await refreshAll();
 
             }
             catch (err) {
@@ -2634,7 +2477,7 @@ document
 
                 closeModal("taskModal");
 
-                refreshAll();
+                await refreshAll();
 
             }
             catch(err){
@@ -2695,6 +2538,16 @@ document
 
 }else{
 
+                await client
+.from("tasks")
+.update({
+
+archived:true,
+
+archived_at:new Date().toISOString()
+
+})
+.eq("project_id",id);
                 ({error}=await client
                     .from("projects")
 .update({
@@ -2720,7 +2573,7 @@ document
 
             showToast("Berhasil diarsipkan","success");
 
-            refreshAll();
+            await refreshAll();
             await renderArchive();
 
         } 
@@ -2920,7 +2773,7 @@ document
                     "success"
                 );
 
-                refreshAll();
+                await refreshAll();
 
                 event.target.value = "";
 
@@ -3056,7 +2909,8 @@ ${project?.name || "-"}
 
 <td class="archive-action">
                     <button
-class="btn btn-outline archive-btn">
+class="btn btn-outline archive-btn"
+onclick="restoreTask(${task.id})">
 
 <i class="fa-solid fa-rotate-left"></i>
 
@@ -3064,8 +2918,10 @@ Restore
 
 </button>
 
+
 <button
-class="btn archive-btn archive-delete">
+class="btn archive-btn archive-delete"
+onclick="deleteForever(${task.id})">
 
 <i class="fa-solid fa-trash"></i>
 
@@ -3210,7 +3066,7 @@ document.querySelector(".stats-grid").style.display="grid";
 document.querySelector(".greeting h1").innerText =
 "Semua Task";
 
-refreshAll();
+await refreshAll();
 
 }
 
