@@ -313,11 +313,7 @@ transform: translateY(-4px);
 box-shadow: 0 12px 30px rgba(0,0,0,.08);
 
 }
-        .project-card:hover .progress-fill{
-
-    filter:brightness(1.08);
-
-}
+       
         
 .project-color{
 
@@ -553,21 +549,32 @@ margin-top:6px;
 
 }
    .project-card{
+    background:#fff;
+    border-radius:20px;
+    overflow:hidden;
 
-transition:
-transform .25s ease,
-box-shadow .25s ease;
+    border:1px solid #E5E7EB;
 
+    box-shadow:0 4px 12px rgba(15,23,42,.05);
+
+    padding:24px;
+
+    display:flex;
+    flex-direction:column;
+
+    transition:
+        transform .25s ease,
+        box-shadow .25s ease;
+
+    position:relative;
 }
 
 .project-card:hover{
 
-transform:
-translateY(-6px)
-scale(1.01);
+    transform:translateY(-6px);
 
-box-shadow:
-0 18px 40px rgba(15,23,42,.12);
+    box-shadow:
+        0 16px 36px rgba(15,23,42,.12);
 
 }
 
