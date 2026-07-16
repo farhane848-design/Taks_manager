@@ -23,10 +23,14 @@
 
     <!-- Chart.js (Untuk Grafik Dashboard) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     
     <!-- Konfigurasi Tailwind -->
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
@@ -99,6 +103,34 @@
         .checklist-item { display: flex; align-items: center; gap: 10px; }
         .checklist-item input[type="text"] { flex: 1; border: none; background: transparent; font-size: 14px; border-bottom: 1px solid #e5e7eb; padding: 4px 0; outline:none;}
         .checklist-item input[type="text"]:focus { border-bottom-color: #2563eb; }
+
+        /* Tema dan panel fitur tambahan */
+        .dark body { background:#0f172a; color:#e2e8f0; }
+        .dark .bg-white, .dark .modal { background:#1e293b !important; }
+        .dark .bg-slate-50, .dark .bg-\[\#F8FAFC\] { background:#0f172a !important; }
+        .dark .bg-slate-100 { background:#334155 !important; }
+        .dark .text-slate-900, .dark .text-slate-800, .dark .text-slate-700 { color:#f1f5f9 !important; }
+        .dark .text-slate-600, .dark .text-slate-500 { color:#cbd5e1 !important; }
+        .dark .border-slate-200, .dark .border-slate-100, .dark .border { border-color:#334155 !important; }
+        .dark .form-control { background:#0f172a; color:#f1f5f9; border-color:#475569; }
+        .dark input, .dark select, .dark textarea { color:#f1f5f9 !important; }
+        .dark select:not(.form-control), .dark #taskToolbar select, .dark #archiveSearch, .dark #searchInput { background:#1e293b !important; border-color:#475569 !important; color:#f8fafc !important; }
+        .dark #taskToolbar, .dark #archivePage .bg-white, .dark #projectPage .bg-white { background:#1e293b !important; }
+        .dark #projectList h4, .dark #archiveTableBody .font-semibold, .dark #notesList h3, .dark #documentsList .font-semibold { color:#f8fafc !important; }
+        .dark .badge-project { background:#334155; border-color:#475569; color:#f8fafc; }
+        .dark #taskTableBody td, .dark #taskTableBody .text-slate-900, .dark #taskTableBody .text-slate-600 { color:#e2e8f0 !important; }
+        .dark .btn-outline { background:#334155; color:#f8fafc; border-color:#475569; }
+        .dark #projectList button, .dark #taskToolbar button { color:#f8fafc; }
+        .resource-action { width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center; border-radius:8px; transition:.2s; }
+        .resource-action.edit { background:#eff6ff; color:#2563eb; } .resource-action.edit:hover { background:#2563eb; color:#fff; }
+        .resource-action.delete { background:#fef2f2; color:#dc2626; } .resource-action.delete:hover { background:#dc2626; color:#fff; }
+        .dark .resource-action.edit { background:#1e3a5f; color:#93c5fd; } .dark .resource-action.delete { background:#4c1d1d; color:#fca5a5; }
+        .note-card { background:linear-gradient(145deg,#fffbeb,#fff7d6); border:1px solid #fde68a; box-shadow:0 8px 20px rgba(146,64,14,.08); }
+        .dark .note-card { background:linear-gradient(145deg,#3b2c12,#2a2115); border-color:#705216; }
+        .btn-create { background:#2563eb !important; color:#fff !important; border-color:#2563eb !important; box-shadow:0 8px 18px rgba(37,99,235,.2); }
+        .btn-create:hover { background:#1d4ed8 !important; transform:translateY(-1px); }
+        .notif-dropdown { display:none; position:absolute; right:0; top:calc(100% + 10px); width:320px; max-height:380px; overflow:auto; z-index:60; }
+        .notif-dropdown.open { display:block; }
     </style>
 </head>
 <body class="bg-[#F8FAFC] text-slate-800 font-sans h-screen flex overflow-hidden selection:bg-brand-100 selection:text-brand-600">
@@ -132,6 +164,12 @@
                         <i data-lucide="folder-open" class="w-5 h-5 transition-colors"></i>
                         <span class="font-medium text-sm">Project</span>
                     </a>
+                    <a href="#" id="menu-documents" onclick="showDocuments(event)" class="menu-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
+                        <i data-lucide="file-text" class="w-5 h-5 transition-colors"></i><span class="font-medium text-sm">Dokumen</span>
+                    </a>
+                    <a href="#" id="menu-notes" onclick="showNotes(event)" class="menu-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
+                        <i data-lucide="sticky-note" class="w-5 h-5 transition-colors"></i><span class="font-medium text-sm">Catatan</span>
+                    </a>
                     <a href="#" id="menu-arsip" onclick="showArchive(event)" class="menu-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
                         <i data-lucide="archive" class="w-5 h-5 transition-colors"></i>
                         <span class="font-medium text-sm">Arsip Task</span>
@@ -141,11 +179,10 @@
             <div>
                 <p class="text-xs font-semibold text-slate-400 mb-3 px-3 uppercase tracking-wider">Lainnya</p>
                 <nav class="space-y-1">
-                    <a href="#" onclick="document.getElementById('restoreFile').click()" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
-                        <i data-lucide="upload-cloud" class="w-5 h-5 text-slate-400 group-hover:text-slate-600 transition-colors"></i>
-                        <span class="font-medium text-sm">Restore Backup</span>
+                    <a href="#" id="menu-reports" onclick="showReports(event)" class="menu-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors group">
+                        <i data-lucide="chart-no-axes-combined" class="w-5 h-5 text-slate-400 group-hover:text-slate-600 transition-colors"></i>
+                        <span class="font-medium text-sm">Laporan</span>
                     </a>
-                    <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="restoreBackup(event)">
                 </nav>
             </div>
         </div>
@@ -168,6 +205,11 @@
                     <input type="text" id="searchInput" placeholder="Cari task, project, atau catatan..." onkeyup="handleSearch()"
                         class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:bg-white transition-all placeholder:text-slate-400">
                 </div>
+                <div class="relative">
+                    <button onclick="toggleNotifications(event)" class="relative p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:text-brand-600" aria-label="Notifikasi"><i data-lucide="bell" class="w-5 h-5"></i><span id="notificationBadge" class="hidden absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] leading-4"></span></button>
+                    <div id="notificationDropdown" class="notif-dropdown bg-white border border-slate-200 rounded-xl shadow-xl"><div class="p-4 border-b border-slate-100 flex justify-between"><b>Notifikasi</b><span id="notificationCount" class="text-xs text-slate-500">0</span></div><div id="notificationList" class="divide-y divide-slate-100"></div></div>
+                </div>
+                <button onclick="toggleTheme()" class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:text-brand-600" aria-label="Ubah tema"><i data-lucide="moon" class="w-5 h-5 dark:hidden"></i><i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i></button>
                 <button class="flex items-center gap-3 hover:opacity-80 transition-opacity">
                     <img src="https://ui-avatars.com/api/?name=Farhan+Ersandy&background=2563EB&color=fff" class="w-10 h-10 rounded-full shadow-sm ring-2 ring-white" alt="Profile">
                     <span class="text-sm font-medium text-slate-700 hidden lg:block">Farhan Ersandy</span>
@@ -247,6 +289,16 @@
                                     <p>Hebat! Tidak ada task yang terlambat.</p>
                                 </div>
                             </div>
+                            <div class="p-5 border-y border-slate-100 flex justify-between items-center bg-red-50/40">
+                                <h3 class="font-bold text-slate-800 flex items-center gap-2"><i data-lucide="calendar-clock" class="w-5 h-5 text-red-500"></i> Deadline Hari Ini</h3>
+                                <span class="bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full" id="statTodayDeadlineBadge">0 Task</span>
+                            </div>
+                            <div class="flex-1 overflow-auto p-2" id="dashboardTodayDeadlineList"></div>
+                            <div class="p-5 border-y border-slate-100 flex justify-between items-center bg-amber-50/40">
+                                <h3 class="font-bold text-slate-800 flex items-center gap-2"><i data-lucide="clock-3" class="w-5 h-5 text-amber-500"></i> Mendekati Deadline (2-3 Hari)</h3>
+                                <span class="bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1 rounded-full" id="statNearDeadlineBadge">0 Task</span>
+                            </div>
+                            <div class="flex-1 overflow-auto p-2" id="dashboardNearDeadlineList"></div>
                         </div>
                     </div>
                 </div>
@@ -340,10 +392,19 @@
                     <h2 id="detailProjectTitle" class="text-2xl font-bold text-slate-800"></h2>
                     <p id="detailProjectDesc" class="text-slate-500 mt-2 mb-8"></p>
 
-                    <div id="projectTaskCards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        <!-- Diisi JavaScript -->
+                    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                        <div class="xl:col-span-2"><h3 class="font-bold text-slate-800 mb-4">Daftar Task</h3><div id="projectTaskCards" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div></div>
+                        <aside class="space-y-6">
+                            <section class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm"><div class="flex justify-between items-center mb-3"><h3 class="font-bold text-slate-800 flex gap-2 items-center"><i data-lucide="file-text" class="w-4 h-4 text-brand-600"></i> Dokumen</h3><button onclick="openDocumentModal(currentProjectId)" class="text-brand-600 text-xs font-bold">Tambah</button></div><div id="projectDocumentsList" class="space-y-2 text-sm"></div></section>
+                            <section class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm"><div class="flex justify-between items-center mb-3"><h3 class="font-bold text-slate-800 flex gap-2 items-center"><i data-lucide="sticky-note" class="w-4 h-4 text-amber-500"></i> Catatan</h3><button onclick="openNoteModal(currentProjectId)" class="text-brand-600 text-xs font-bold">Tambah</button></div><div id="projectNotesList" class="space-y-3 text-sm"></div></section>
+                        </aside>
                     </div>
                 </div>
+
+                <div id="documentsPage" style="display:none;"><div class="flex flex-col md:flex-row gap-3 justify-between mb-6"><div class="flex flex-col sm:flex-row gap-3"><select id="documentProjectFilter" onchange="renderDocuments()" class="form-control min-w-48"><option value="">Semua Project</option></select><div class="relative"><i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i><input id="documentSearch" oninput="renderDocuments()" class="form-control pl-9" placeholder="Cari dokumen..."></div></div><button class="btn btn-create" onclick="openDocumentModal()"><i data-lucide="upload-cloud" class="w-4 h-4"></i> Tambah Dokumen</button></div><div id="documentsList" class="bg-white rounded-xl border border-slate-200 shadow-sm divide-y divide-slate-100"></div></div>
+                <div id="notesPage" style="display:none;"><div class="flex flex-col md:flex-row gap-3 justify-between mb-6"><div class="flex flex-col sm:flex-row gap-3"><select id="noteProjectFilter" onchange="renderNotes()" class="form-control min-w-48"><option value="">Semua Project</option></select><div class="relative"><i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i><input id="noteSearch" oninput="renderNotes()" class="form-control pl-9" placeholder="Cari catatan..."></div></div><button class="btn btn-create" onclick="openNoteModal()"><i data-lucide="plus" class="w-4 h-4"></i> Tambah Catatan</button></div><div id="notesList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"></div></div>
+
+                <div id="reportsPage" style="display:none;"><div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8"><div class="bg-white border border-slate-200 rounded-2xl p-6"><p class="text-sm text-slate-500">Total Project</p><p id="reportProjectCount" class="text-3xl font-bold text-slate-900 mt-2">0</p></div><div class="bg-white border border-slate-200 rounded-2xl p-6"><p class="text-sm text-slate-500">Task Aktif</p><p id="reportTaskCount" class="text-3xl font-bold text-slate-900 mt-2">0</p></div><div class="bg-white border border-slate-200 rounded-2xl p-6"><p class="text-sm text-slate-500">Task Selesai</p><p id="reportDoneCount" class="text-3xl font-bold text-slate-900 mt-2">0</p></div></div><div class="bg-white border border-slate-200 rounded-2xl p-6"><h3 class="font-bold text-slate-800">Ekspor Laporan</h3><p class="text-sm text-slate-500 mt-1 mb-5">Unduh ringkasan project dan seluruh task aktif.</p><div class="flex flex-wrap gap-3"><button class="btn btn-create" onclick="downloadExcelReport()"><i data-lucide="sheet" class="w-4 h-4"></i> Download Excel</button><button class="btn btn-outline" onclick="downloadPdfReport()"><i data-lucide="file-down" class="w-4 h-4"></i> Download PDF</button></div></div></div>
 
                 <!-- ==== HALAMAN 4: ARSIP ==== -->
                 <div id="archivePage" style="display:none;">
@@ -489,11 +550,17 @@
         </div>
     </div>
 
+    <!-- MODAL: DOKUMEN -->
+    <div class="modal-overlay" id="documentModal"><div class="modal"><div class="modal-header"><h2 id="documentModalTitle">Tambah Dokumen</h2><button class="close-modal" onclick="closeModal('documentModal')"><i data-lucide="x" class="w-5 h-5"></i></button></div><div class="modal-body"><input type="hidden" id="documentId"><input type="hidden" id="documentExistingUrl"><div class="form-group"><label>Project *</label><select id="documentProject" class="form-control"></select></div><div class="form-group"><label>Nama dokumen *</label><input id="documentName" class="form-control" placeholder="Contoh: Brief desain"></div><div class="form-group"><label>Deskripsi</label><textarea id="documentDescription" class="form-control" rows="3"></textarea></div><div class="form-group"><label>Upload file (opsional)</label><input id="documentFile" type="file" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.zip"><p class="text-xs text-slate-500">Maks. 10 MB. File disimpan ke Supabase Storage.</p></div><div class="form-group"><label>Tautan file (opsional)</label><input id="documentUrl" class="form-control" placeholder="https://..."></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('documentModal')">Batal</button><button class="btn btn-primary" onclick="saveDocument()">Simpan</button></div></div></div>
+
+    <!-- MODAL: CATATAN -->
+    <div class="modal-overlay" id="noteModal"><div class="modal"><div class="modal-header"><h2 id="noteModalTitle">Tambah Catatan</h2><button class="close-modal" onclick="closeModal('noteModal')"><i data-lucide="x" class="w-5 h-5"></i></button></div><div class="modal-body"><input type="hidden" id="noteId"><div class="form-group"><label>Project *</label><select id="noteProject" class="form-control"></select></div><div class="form-group"><label>Judul *</label><input id="noteTitle" class="form-control" placeholder="Judul catatan"></div><div class="form-group"><label>Isi catatan *</label><textarea id="noteContent" class="form-control" rows="7"></textarea></div><div class="form-group"><label>Tautan terkait (opsional)</label><input id="noteUrl" class="form-control" placeholder="https://..."></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('noteModal')">Batal</button><button class="btn btn-primary" onclick="saveNote()">Simpan</button></div></div></div>
+
     <!-- MODAL: DELETE CONFIRM -->
     <div class="modal-overlay" id="deleteModal">
         <div class="modal" style="width:400px;">
             <div class="modal-header">
-                <h2>Arsipkan Data</h2>
+                <h2 id="deleteModalTitle">Arsipkan Data</h2>
             </div>
             <div class="modal-body">
                 <p id="deleteMsg" class="text-sm text-slate-600">Apakah Anda yakin ingin mengarsipkan item ini?</p>
@@ -502,7 +569,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-outline" onclick="closeModal('deleteModal')">Batal</button>
-                <button class="btn" style="background:#ef4444; color:white;" onclick="executeDelete()">Ya, Arsipkan</button>
+                <button class="btn" id="deleteConfirmButton" style="background:#ef4444; color:white;" onclick="executeDelete()">Ya, Arsipkan</button>
             </div>
         </div>
     </div>
@@ -517,9 +584,23 @@
         let searchTimeout = null;
         let existingAttachments = []; // State untuk menampung list file eksisting dari database
         let dashboardChartInstance = null; // Variabel global untuk menyimpan referensi grafik
+        let documentsData = [];
+        let notesData = [];
+        let projectCache = [];
+
+        function initTheme() {
+            const theme = localStorage.getItem('taskflow-theme');
+            document.documentElement.classList.toggle('dark', theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches));
+        }
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('taskflow-theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+            if (dashboardChartInstance) loadStats();
+        }
 
         // ON LOAD
         document.addEventListener("DOMContentLoaded", async () => {
+            initTheme();
             lucide.createIcons();
             // Default load adalah dashboard
             await refreshAll();
@@ -529,8 +610,10 @@
             await Promise.all([
                 loadStats(),
                 loadProjectDropdown(),
-                renderTable()
+                renderTable(),
+                loadResources()
             ]);
+            renderDocuments(); renderNotes(); renderNotifications();
 
             if (document.getElementById("projectPage").style.display === "block") {
                 await renderProjects();
@@ -567,6 +650,13 @@
                 const overdueTasks = tasks.filter(t => t.status !== "done" && t.deadline < today)
                                          .sort((a,b) => new Date(a.deadline) - new Date(b.deadline));
                 const countOverdue = overdueTasks.length;
+                const dateInThreeDays = new Date(); dateInThreeDays.setDate(dateInThreeDays.getDate() + 3);
+                const threeDays = dateInThreeDays.toISOString().split('T')[0];
+                const dateTomorrow = new Date(); dateTomorrow.setDate(dateTomorrow.getDate() + 1);
+                const tomorrow = dateTomorrow.toISOString().split('T')[0];
+                const todayTasks = tasks.filter(t => t.status !== 'done' && t.deadline === today);
+                const nearTasks = tasks.filter(t => t.status !== 'done' && t.deadline > tomorrow && t.deadline <= threeDays)
+                    .sort((a,b) => new Date(a.deadline) - new Date(b.deadline));
 
                 // Update Angka di Grid
                 document.getElementById("statTotalProject").innerText = projects.length;
@@ -600,7 +690,7 @@
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
                         htmlList += `
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
+                        <div onclick="openProject(${t.project_id})" class="cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between p-4 border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
                             <div>
                                 <h4 class="font-bold text-slate-900 text-sm">${t.title}</h4>
                                 <p class="text-xs text-slate-500 mt-1"><i data-lucide="folder" class="w-3 h-3 inline"></i> ${projName}</p>
@@ -616,6 +706,15 @@
                     }
                     overdueContainer.innerHTML = htmlList;
                 }
+                document.getElementById('statNearDeadlineBadge').innerText = `${nearTasks.length} Task`;
+                document.getElementById('statTodayDeadlineBadge').innerText = `${todayTasks.length} Task`;
+                const todayContainer = document.getElementById('dashboardTodayDeadlineList');
+                todayContainer.innerHTML = todayTasks.length ? todayTasks.map(t => { const project=projects.find(p=>p.id==t.project_id)?.name||'Unknown Project'; return `<div onclick="openProject(${t.project_id})" class="cursor-pointer flex items-center justify-between p-4 border-b border-slate-100 last:border-0 hover:bg-red-50 transition-colors"><div><h4 class="font-bold text-slate-900 text-sm">${esc(t.title)}</h4><p class="text-xs text-slate-500 mt-1"><i data-lucide="folder" class="w-3 h-3 inline"></i> ${esc(project)}</p></div><span class="text-xs font-semibold text-red-700 bg-red-100 px-2 py-1 rounded">Hari ini</span></div>`; }).join('') : '<div class="text-center p-6 text-sm text-slate-500">Tidak ada deadline hari ini.</div>';
+                const nearContainer = document.getElementById('dashboardNearDeadlineList');
+                nearContainer.innerHTML = nearTasks.length ? nearTasks.map(t => {
+                    const project = projects.find(p => p.id == t.project_id)?.name || 'Unknown Project';
+                    return `<div onclick="openProject(${t.project_id})" class="cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between p-4 border-b border-slate-100 last:border-0 hover:bg-amber-50 transition-colors"><div><h4 class="font-bold text-slate-900 text-sm">${esc(t.title)}</h4><p class="text-xs text-slate-500 mt-1"><i data-lucide="folder" class="w-3 h-3 inline"></i> ${esc(project)}</p></div><span class="mt-2 sm:mt-0 text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-1 rounded">${t.deadline}</span></div>`;
+                }).join('') : '<div class="text-center p-6 text-sm text-slate-500">Tidak ada deadline dalam 3 hari ke depan.</div>';
                 lucide.createIcons();
             }
         }
@@ -692,6 +791,47 @@
             });
             document.getElementById("filterProject").innerHTML = filterHtml;
             document.getElementById("taskProject").innerHTML = formHtml;
+            projectCache = data;
+            const resourceOptions = `<option value="">Pilih project</option>` + formHtml;
+            document.getElementById("documentProject").innerHTML = resourceOptions;
+            document.getElementById("noteProject").innerHTML = resourceOptions;
+            const filterOptions = `<option value="">Semua Project</option>` + formHtml;
+            document.getElementById("documentProjectFilter").innerHTML = filterOptions;
+            document.getElementById("noteProjectFilter").innerHTML = filterOptions;
+        }
+
+        const esc = (value = '') => String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+        const localRows = (name) => JSON.parse(localStorage.getItem(`taskflow-${name}`) || '[]');
+        const saveLocalRows = (name, rows) => localStorage.setItem(`taskflow-${name}`, JSON.stringify(rows));
+        async function loadResources() {
+            const [docRes, noteRes] = await Promise.all([
+                client.from('documents').select('*').order('created_at', {ascending:false}),
+                client.from('notes').select('*').order('created_at', {ascending:false})
+            ]);
+            documentsData = docRes.error ? localRows('documents') : (docRes.data || []);
+            notesData = noteRes.error ? localRows('notes') : (noteRes.data || []);
+            renderDocuments(); renderNotes(); renderNotifications();
+        }
+        function projectName(id) { return projectCache.find(p => String(p.id) === String(id))?.name || 'Tanpa project'; }
+        function projectColor(id) { return projectCache.find(p => String(p.id) === String(id))?.color || '#f59e0b'; }
+        function renderDocuments() {
+            const target = document.getElementById('documentsList'); if (!target) return;
+            const filter=document.getElementById('documentProjectFilter')?.value || '', query=(document.getElementById('documentSearch')?.value || '').toLowerCase(); const rows=documentsData.filter(d=>(!filter || String(d.project_id)===filter) && `${d.name} ${d.description||''} ${projectName(d.project_id)}`.toLowerCase().includes(query));
+            target.innerHTML = rows.length ? rows.map(d => `<div class="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"><div class="flex gap-3"><div class="w-10 h-10 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center shrink-0"><i data-lucide="file-text" class="w-5 h-5"></i></div><div><p class="font-semibold text-slate-800">${esc(d.name)}</p><p class="text-sm text-slate-500">${esc(d.description || 'Tanpa deskripsi')} · ${esc(projectName(d.project_id))}</p></div></div><div class="flex gap-2 items-center">${d.file_url ? `<a href="${esc(d.file_url)}" target="_blank" class="resource-action edit" title="Buka dokumen"><i data-lucide="external-link" class="w-4 h-4"></i></a>` : ''}<button onclick="editDocument(${d.id})" class="resource-action edit" title="Edit dokumen"><i data-lucide="pencil" class="w-4 h-4"></i></button><button onclick="deleteDocument(${d.id})" class="resource-action delete" title="Hapus dokumen"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`).join('') : '<div class="p-12 text-center text-slate-500">Dokumen tidak ditemukan.</div>';
+            lucide.createIcons();
+        }
+        function renderNotes() {
+            const target = document.getElementById('notesList'); if (!target) return;
+            const filter=document.getElementById('noteProjectFilter')?.value || '', query=(document.getElementById('noteSearch')?.value || '').toLowerCase(); const rows=notesData.filter(n=>(!filter || String(n.project_id)===filter) && `${n.title} ${n.content} ${projectName(n.project_id)}`.toLowerCase().includes(query));
+            target.innerHTML = rows.length ? rows.map(n => { const color=projectColor(n.project_id); return `<article class="note-card rounded-2xl p-5 relative overflow-hidden" style="border-color:${color}80;box-shadow:0 8px 20px ${color}22"><i data-lucide="quote" class="absolute -right-2 -top-2 w-20 h-20 opacity-20" style="color:${color}"></i><div class="flex justify-between gap-3 relative"><div><p class="text-[11px] uppercase tracking-wider font-bold mb-2" style="color:${color}">${esc(projectName(n.project_id))}</p><h3 class="font-bold text-slate-800 text-lg">${esc(n.title)}</h3></div><div class="flex gap-2"><button onclick="editNote(${n.id})" class="resource-action edit" title="Edit catatan"><i data-lucide="pencil" class="w-4 h-4"></i></button><button onclick="deleteNote(${n.id})" class="resource-action delete" title="Hapus catatan"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div><p class="text-sm text-slate-600 whitespace-pre-wrap mt-4 leading-6 relative">${esc(n.content)}</p>${n.link_url ? `<a href="${esc(n.link_url)}" target="_blank" class="inline-flex items-center gap-1 text-xs font-bold mt-5 relative" style="color:${color}"><i data-lucide="link" class="w-3.5 h-3.5"></i> Buka tautan terkait</a>` : ''}</article>`; }).join('') : '<div class="col-span-full py-12 text-center text-slate-500">Catatan tidak ditemukan.</div>';
+            lucide.createIcons();
+        }
+        function renderProjectResources(projectId) {
+            const docs = documentsData.filter(d => String(d.project_id) === String(projectId));
+            const notes = notesData.filter(n => String(n.project_id) === String(projectId));
+            document.getElementById('projectDocumentsList').innerHTML = docs.length ? docs.map(d => `<div class="flex gap-2 items-center"><i data-lucide="file" class="w-4 h-4 text-brand-600 shrink-0"></i><span class="flex-1 truncate">${esc(d.name)}</span>${d.file_url ? `<a href="${esc(d.file_url)}" target="_blank" class="text-brand-600"><i data-lucide="external-link" class="w-3.5 h-3.5"></i></a>` : ''}<button onclick="editDocument(${d.id})" class="text-brand-600"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button onclick="deleteDocument(${d.id})" class="text-red-600"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div>`).join('') : '<p class="text-slate-500 text-xs">Belum ada dokumen.</p>';
+            document.getElementById('projectNotesList').innerHTML = notes.length ? notes.map(n => `<div class="border-l-2 border-amber-400 pl-3"><div class="flex gap-2"><b class="text-slate-800 flex-1">${esc(n.title)}</b><button onclick="editNote(${n.id})" class="text-brand-600"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button onclick="deleteNote(${n.id})" class="text-red-600"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div><p class="text-slate-500 text-xs mt-1 line-clamp-3">${esc(n.content)}</p></div>`).join('') : '<p class="text-slate-500 text-xs">Belum ada catatan.</p>';
+            lucide.createIcons();
         }
 
         // === FUNGSI RENDER TABEL SEMUA TASK ===
@@ -895,6 +1035,9 @@
             document.getElementById("taskPage").style.display="none";
             document.getElementById("projectDetailPage").style.display="block";
             document.getElementById("archivePage").style.display="none";
+            document.getElementById("documentsPage").style.display="none";
+            document.getElementById("notesPage").style.display="none";
+            document.getElementById("reportsPage").style.display="none";
             
             document.getElementById("mainHeaderTitle").innerText = project.name;
             document.getElementById("mainHeaderDesc").innerText = project.description || "Detail pekerjaan untuk project ini.";
@@ -904,6 +1047,7 @@
             document.getElementById("btnEditProjectDetail").onclick = () => { editProject(project); };
 
             renderProjectCards(tasks);
+            renderProjectResources(projectId);
             activateMenu(document.getElementById("menu-project"));
         }
 
@@ -1075,6 +1219,9 @@
             document.getElementById("projectPage").style.display="none";
             document.getElementById("projectDetailPage").style.display="none";
             document.getElementById("archivePage").style.display="none";
+            document.getElementById("documentsPage").style.display="none";
+            document.getElementById("notesPage").style.display="none";
+            document.getElementById("reportsPage").style.display="none";
             await refreshAll();
         }
 
@@ -1090,6 +1237,9 @@
             document.getElementById("projectPage").style.display="none";
             document.getElementById("projectDetailPage").style.display="none";
             document.getElementById("archivePage").style.display="none";
+            document.getElementById("documentsPage").style.display="none";
+            document.getElementById("notesPage").style.display="none";
+            document.getElementById("reportsPage").style.display="none";
             await refreshAll();
         }
 
@@ -1105,6 +1255,9 @@
             document.getElementById("projectPage").style.display="block";
             document.getElementById("projectDetailPage").style.display="none";
             document.getElementById("archivePage").style.display="none";
+            document.getElementById("documentsPage").style.display="none";
+            document.getElementById("notesPage").style.display="none";
+            document.getElementById("reportsPage").style.display="none";
             await renderProjects();
         }
 
@@ -1120,7 +1273,29 @@
             document.getElementById("projectPage").style.display="none";
             document.getElementById("projectDetailPage").style.display="none";
             document.getElementById("archivePage").style.display="block";
+            document.getElementById("documentsPage").style.display="none";
+            document.getElementById("notesPage").style.display="none";
+            document.getElementById("reportsPage").style.display="none";
             await renderArchive();
+        }
+
+        async function showDocuments(event) {
+            if(event) event.preventDefault(); activateMenu(document.getElementById('menu-documents'));
+            document.getElementById('mainHeaderTitle').innerText = 'Dokumen'; document.getElementById('mainHeaderDesc').innerText = 'Arsip dokumen setiap project.';
+            ['dashboardPage','taskPage','projectPage','projectDetailPage','archivePage','notesPage','reportsPage'].forEach(id => document.getElementById(id).style.display='none');
+            document.getElementById('documentsPage').style.display='block'; await loadResources();
+        }
+        async function showNotes(event) {
+            if(event) event.preventDefault(); activateMenu(document.getElementById('menu-notes'));
+            document.getElementById('mainHeaderTitle').innerText = 'Catatan'; document.getElementById('mainHeaderDesc').innerText = 'Catatan terhubung ke project.';
+            ['dashboardPage','taskPage','projectPage','projectDetailPage','archivePage','documentsPage','reportsPage'].forEach(id => document.getElementById(id).style.display='none');
+            document.getElementById('notesPage').style.display='block'; await loadResources();
+        }
+        async function showReports(event) {
+            if(event) event.preventDefault(); activateMenu(document.getElementById('menu-reports'));
+            document.getElementById('mainHeaderTitle').innerText='Laporan'; document.getElementById('mainHeaderDesc').innerText='Ringkasan project dan task yang dapat diunduh.';
+            ['dashboardPage','taskPage','projectPage','projectDetailPage','archivePage','documentsPage','notesPage'].forEach(id => document.getElementById(id).style.display='none');
+            document.getElementById('reportsPage').style.display='block'; await loadReportSummary();
         }
 
         // === REST OF YOUR LOGIC ===
@@ -1346,15 +1521,42 @@
 
         function confirmDelete(id,type){
             document.getElementById("deleteTargetId").value=id; document.getElementById("deleteTargetType").value=type;
-            document.getElementById("deleteMsg").innerHTML=`Apakah Anda yakin ingin mengarsipkan item ini?`;
+            const project = type === 'project'; document.getElementById('deleteModalTitle').innerText=project?'Hapus Project Permanen':'Arsipkan Task'; document.getElementById('deleteConfirmButton').innerText=project?'Ya, Hapus Permanen':'Ya, Arsipkan';
+            document.getElementById("deleteMsg").innerHTML=project?'Project beserta seluruh task di dalamnya akan dihapus permanen dan tidak dapat dipulihkan.':'Apakah Anda yakin ingin mengarsipkan task ini?';
             document.getElementById("deleteModal").classList.add("active");
         }
         async function executeDelete(){
             const id=document.getElementById("deleteTargetId").value; const type=document.getElementById("deleteTargetType").value;
-            if(type=="task") await client.from("tasks").update({archived:true, archived_at:new Date().toISOString()}).eq("id",id);
-            else { await client.from("tasks").update({archived:true, archived_at:new Date().toISOString()}).eq("project_id",id); await client.from("projects").update({archived:true, archived_at:new Date().toISOString()}).eq("id",id); }
-            closeModal("deleteModal"); showToast("Berhasil diarsipkan","success"); await refreshAll();
+            if(type=="task") { await client.from("tasks").update({archived:true, archived_at:new Date().toISOString()}).eq("id",id); closeModal("deleteModal"); showToast("Task diarsipkan","success"); }
+            else { await client.from("tasks").delete().eq("project_id",id); await client.from("projects").delete().eq("id",id); closeModal("deleteModal"); showToast("Project dihapus permanen","success"); }
+            await refreshAll();
         }
+        function openDocumentModal(projectId = '') {
+            document.getElementById('documentId').value = ''; document.getElementById('documentName').value = ''; document.getElementById('documentDescription').value = ''; document.getElementById('documentUrl').value = ''; document.getElementById('documentExistingUrl').value=''; document.getElementById('documentFile').value='';
+            document.getElementById('documentProject').value = projectId || ''; document.getElementById('documentModalTitle').innerText = 'Tambah Dokumen'; document.getElementById('documentModal').classList.add('active');
+        }
+        function editDocument(id) { const d = documentsData.find(x => String(x.id) === String(id)); if (!d) return; document.getElementById('documentId').value=d.id; document.getElementById('documentProject').value=d.project_id; document.getElementById('documentName').value=d.name; document.getElementById('documentDescription').value=d.description || ''; document.getElementById('documentUrl').value=d.file_url || ''; document.getElementById('documentExistingUrl').value=d.file_url || ''; document.getElementById('documentFile').value=''; document.getElementById('documentModalTitle').innerText='Edit Dokumen'; document.getElementById('documentModal').classList.add('active'); }
+        async function saveDocument() {
+            const id=document.getElementById('documentId').value, input=document.getElementById('documentFile'); let fileUrl=document.getElementById('documentUrl').value.trim() || document.getElementById('documentExistingUrl').value;
+            if(input.files[0]) { if(input.files[0].size > 10 * 1024 * 1024) return showToast('Ukuran dokumen maksimal 10MB','danger'); try { fileUrl=await uploadAttachment(input.files[0]); } catch(e) { return showToast('Upload dokumen gagal. Pastikan bucket attachments tersedia.','danger'); } }
+            const data={project_id:Number(document.getElementById('documentProject').value), name:document.getElementById('documentName').value.trim(), description:document.getElementById('documentDescription').value.trim(), file_url:fileUrl};
+            if(!data.project_id || !data.name) return showToast('Project dan nama dokumen wajib diisi','danger');
+            const result=id ? await client.from('documents').update(data).eq('id',id) : await client.from('documents').insert([data]);
+            if(result.error) { const rows=localRows('documents'); if(id) { const i=rows.findIndex(x=>String(x.id)===String(id)); rows[i]={...rows[i],...data}; } else rows.unshift({id:Date.now(),...data,created_at:new Date().toISOString()}); saveLocalRows('documents',rows); showToast('Tabel documents belum tersedia; disimpan lokal. Jalankan SQL pendukung untuk sinkronisasi Supabase.','warning'); } else showToast('Dokumen disimpan','success');
+            closeModal('documentModal'); await loadResources(); if(currentProjectId) renderProjectResources(currentProjectId);
+        }
+        async function deleteDocument(id) { if(!confirm('Hapus dokumen ini?')) return; const r=await client.from('documents').delete().eq('id',id); if(r.error) saveLocalRows('documents',localRows('documents').filter(x=>String(x.id)!==String(id))); await loadResources(); if(currentProjectId) renderProjectResources(currentProjectId); }
+        function openNoteModal(projectId = '') { document.getElementById('noteId').value=''; document.getElementById('noteProject').value=projectId || ''; document.getElementById('noteTitle').value=''; document.getElementById('noteContent').value=''; document.getElementById('noteUrl').value=''; document.getElementById('noteModalTitle').innerText='Tambah Catatan'; document.getElementById('noteModal').classList.add('active'); }
+        function editNote(id) { const n=notesData.find(x=>String(x.id)===String(id)); if(!n)return; document.getElementById('noteId').value=n.id; document.getElementById('noteProject').value=n.project_id; document.getElementById('noteTitle').value=n.title; document.getElementById('noteContent').value=n.content; document.getElementById('noteUrl').value=n.link_url || ''; document.getElementById('noteModalTitle').innerText='Edit Catatan'; document.getElementById('noteModal').classList.add('active'); }
+        async function saveNote() { const id=document.getElementById('noteId').value, data={project_id:Number(document.getElementById('noteProject').value),title:document.getElementById('noteTitle').value.trim(),content:document.getElementById('noteContent').value.trim(),link_url:document.getElementById('noteUrl').value.trim()}; if(!data.project_id||!data.title||!data.content)return showToast('Semua field wajib diisi','danger'); const r=id?await client.from('notes').update(data).eq('id',id):await client.from('notes').insert([data]); if(r.error){const rows=localRows('notes');if(id){const i=rows.findIndex(x=>String(x.id)===String(id));rows[i]={...rows[i],...data};}else rows.unshift({id:Date.now(),...data,created_at:new Date().toISOString()});saveLocalRows('notes',rows);showToast('Tabel notes belum tersedia; disimpan lokal. Jalankan SQL pendukung untuk sinkronisasi Supabase.','warning');}else showToast('Catatan disimpan','success');closeModal('noteModal');await loadResources();if(currentProjectId)renderProjectResources(currentProjectId); }
+        async function deleteNote(id) { if(!confirm('Hapus catatan ini?'))return;const r=await client.from('notes').delete().eq('id',id);if(r.error)saveLocalRows('notes',localRows('notes').filter(x=>String(x.id)!==String(id)));await loadResources();if(currentProjectId)renderProjectResources(currentProjectId); }
+        async function getReportData() { const [{data:projects=[]},{data:tasks=[]}] = await Promise.all([client.from('projects').select('*').eq('archived',false),client.from('tasks').select('*').eq('archived',false)]); return {projects,tasks}; }
+        async function loadReportSummary() { const {projects,tasks}=await getReportData(); document.getElementById('reportProjectCount').innerText=projects.length; document.getElementById('reportTaskCount').innerText=tasks.length; document.getElementById('reportDoneCount').innerText=tasks.filter(t=>t.status==='done').length; }
+        async function downloadExcelReport() { const {projects,tasks}=await getReportData(); const projectRows=projects.map(p=>({Project:p.name,Deskripsi:p.description||'',Status:'Aktif'})); const taskRows=tasks.map(t=>({Task:t.title,Project:projects.find(p=>p.id==t.project_id)?.name||'-',Status:t.status,Deadline:t.deadline,Deskripsi:t.description||''})); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(projectRows),'Project'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(taskRows),'Task'); XLSX.writeFile(wb,`TaskFlow-Laporan-${new Date().toISOString().slice(0,10)}.xlsx`); }
+        async function downloadPdfReport() { const {projects,tasks}=await getReportData(); if(!window.jspdf) return showToast('Pustaka PDF belum termuat. Periksa koneksi internet.','danger'); const {jsPDF}=window.jspdf; const pdf=new jsPDF(); const date=new Date().toLocaleDateString('id-ID'); pdf.setFontSize(18); pdf.text('TaskFlow - Laporan Project & Task',14,18); pdf.setFontSize(10); pdf.text(`Dibuat: ${date} | Project aktif: ${projects.length} | Task selesai: ${tasks.filter(t=>t.status==='done').length}`,14,25); pdf.autoTable({startY:32,head:[['Task','Project','Status','Deadline']],body:tasks.map(t=>[t.title,projects.find(p=>p.id==t.project_id)?.name||'-',t.status,t.deadline||'-']),styles:{fontSize:8},headStyles:{fillColor:[37,99,235]}}); pdf.save(`TaskFlow-Laporan-${new Date().toISOString().slice(0,10)}.pdf`); }
+        function toggleNotifications(e) { if(e)e.stopPropagation(); document.getElementById('notificationDropdown').classList.toggle('open'); }
+        function renderNotifications() { const today=new Date().toISOString().slice(0,10); client.from('tasks').select('*').eq('archived',false).then(({data=[]})=>{const dueToday=data.filter(t=>t.status!=='done' && t.deadline===today);const overdue=data.filter(t=>t.status!=='done' && t.deadline && t.deadline<today);const items=[...dueToday.map(t=>({kind:'Hari ini',icon:'calendar-clock',color:'text-red-600 bg-red-50',text:t.title,sub:`Deadline hari ini · ${projectName(t.project_id)}`,project_id:t.project_id})),...overdue.map(t=>({kind:'Terlambat',icon:'alert-triangle',color:'text-red-600 bg-red-50',text:t.title,sub:`Deadline ${t.deadline} · ${projectName(t.project_id)}`,project_id:t.project_id})),...documentsData.slice(0,2).map(d=>({kind:'Dokumen',icon:'file-text',color:'text-brand-600 bg-brand-50',text:d.name,sub:projectName(d.project_id),project_id:d.project_id})),...notesData.slice(0,2).map(n=>({kind:'Catatan',icon:'sticky-note',color:'text-amber-600 bg-amber-50',text:n.title,sub:projectName(n.project_id),project_id:n.project_id}))];document.getElementById('notificationCount').innerText=dueToday.length?`${dueToday.length} deadline hari ini`:`${items.length} notifikasi`;const badge=document.getElementById('notificationBadge');badge.innerText=items.length;badge.classList.toggle('hidden',!items.length);document.getElementById('notificationList').innerHTML=items.length?items.map(i=>`<button onclick="openProject(${i.project_id});document.getElementById('notificationDropdown').classList.remove('open')" class="w-full text-left p-4 hover:bg-slate-50 flex gap-3"><span class="w-8 h-8 rounded-lg ${i.color} flex items-center justify-center shrink-0"><i data-lucide="${i.icon}" class="w-4 h-4"></i></span><span><b class="text-sm text-slate-800 block">${esc(i.text)}</b><span class="text-xs text-slate-500 block mt-1">${esc(i.kind)} · ${esc(i.sub)}</span></span></button>`).join(''):'<p class="p-6 text-center text-sm text-slate-500">Tidak ada notifikasi.</p>';lucide.createIcons();}); }
+        document.addEventListener('click', e => { const dropdown=document.getElementById('notificationDropdown'); if(dropdown && !dropdown.parentElement.contains(e.target)) dropdown.classList.remove('open'); });
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
         function showToast(message, type = 'success') {
             const container = document.getElementById('toastContainer'); const toast = document.createElement('div'); toast.className = `toast ${type}`;
