@@ -297,7 +297,7 @@ body{display:block;padding-bottom:env(safe-area-inset-bottom);}
 display:grid;
 
 grid-template-columns:
-repeat(auto-fill,minmax(320px,1fr));
+repeat(auto-fit,minmax(330px,1fr));
 
 gap:24px;
 
@@ -349,11 +349,16 @@ transition:.3s;
 .project-title{
 
 display:flex;
+
 align-items:center;
+
 gap:10px;
 
-font-size:20px;
-font-weight:700;
+}
+
+.project-title i{
+
+color:#2563EB;
 
 }
 
@@ -391,24 +396,27 @@ margin-top:20px;
 
 display:flex;
 
-gap:8px;
+gap:10px;
+
+margin-top:auto;
+
+padding-top:16px;
+
+border-top:1px solid #EEF2F7;
 
 }
-    .project-actions{
+        .project-actions button{
 
-display:flex;
+flex:1;
 
-justify-content:center;
+height:42px;
 
-gap:12px;
+border-radius:12px;
 
-margin-top:18px;
-
-padding-top:14px;
-
-border-top:1px solid #E5E7EB;
+font-weight:600;
 
 }
+        
         .project-action{
 
 flex:1;
@@ -549,26 +557,21 @@ margin-top:6px;
 
 }
    .project-card{
-    background:#fff;
-    border-radius:20px;
-    overflow:hidden;
 
-    border:1px solid #E5E7EB;
+transition:
+transform .25s,
+box-shadow .25s;
 
-    box-shadow:0 4px 12px rgba(15,23,42,.05);
-
-    padding:24px;
-
-    display:flex;
-    flex-direction:column;
-
-    transition:
-        transform .25s ease,
-        box-shadow .25s ease;
-
-    position:relative;
 }
 
+.project-card:hover{
+
+transform:translateY(-5px);
+
+box-shadow:
+0 18px 36px rgba(15,23,42,.12);
+
+}
 .project-card:hover{
 
     transform:translateY(-6px);
@@ -669,31 +672,27 @@ color:#64748B;
 
 .project-stat{
 
-display:flex;
+display:grid;
 
-justify-content:space-between;
+grid-template-columns:repeat(3,1fr);
 
-align-items:center;
+gap:10px;
 
-margin-top:18px;
-
-padding:14px 0;
-
-border-top:1px solid #F1F5F9;
-
-border-bottom:1px solid #F1F5F9;
+margin:18px 0;
 
 }
 
 .project-stat-item{
 
-flex:1;
+background:#F8FAFC;
+
+border-radius:14px;
+
+padding:10px;
 
 text-align:center;
 
-background:none;
-
-padding:0;
+border:1px solid #EEF2F7;
 
 }
 
@@ -715,11 +714,16 @@ color:#64748B;
 
 font-size:26px;
 
-font-weight:700;
-
-margin-top:4px;
-
 display:block;
+
+margin-top:6px;
+
+}
+        .project-stat-item span{
+
+font-size:12px;
+
+color:#64748B;
 
 }
 
@@ -2163,6 +2167,8 @@ style="background:${p.color};">
 <div class="project-body">
 
 <h3 class="project-title">
+
+<i class="fa-solid fa-folder"></i>
 
 ${p.name}
 
