@@ -905,7 +905,6 @@ Done
 
 </div>
         
-</div>
     </main>
 
     <!-- TOAST CONTAINER -->
@@ -1144,13 +1143,17 @@ if(archiveProject){
                 tasks.length;
 
             document.getElementById("statPending").innerText =
-                tasks.filter(t => t.status == "todo").length;
+                tasks.filter(t => t.status !== "done").length;
 
             document.getElementById("statDone").innerText =
                 tasks.filter(t => t.status == "done").length;
 
             document.getElementById("statOverdue").innerText =
-                tasks.filter(t => t.status == "todo" && t.deadline < today).length;
+                tasks.filter(
+    t =>
+        t.status !== "done" &&
+        t.deadline < today
+).length;
         }
 
         async function loadProjectDropdown() {
@@ -1226,7 +1229,24 @@ if(archiveProject){
             let allowedProjectIds =projects.map(p => p.id);
             
             const filteredTasks = tasks.filter(t => {
-                let matchSearch = t.title.toLowerCase().includes(searchQ) || (t.description && t.description.toLowerCase().includes(searchQ));
+                let projectName =
+(proj.name || "").toLowerCase();
+
+let matchSearch =
+
+t.title.toLowerCase().includes(searchQ)
+
+||
+
+(t.description||"")
+
+.toLowerCase()
+
+.includes(searchQ)
+
+||
+
+projectName.includes(searchQ);
                 let matchProj = filterProj ? t.project_id == filterProj : true;
                 let matchStat = filterStat ? t.status == filterStat : true;
                 return matchSearch && matchProj && matchStat && allowedProjectIds.includes(Number(t.project_id));
@@ -1381,8 +1401,11 @@ if (t.status === "todo") {
         projects.forEach(p=>{
 
             const pending =
-        tasks.filter(t=>t.project_id==p.id &&
-        t.status=="todo").length;
+tasks.filter(
+    t =>
+        t.project_id==p.id &&
+        t.status!="done"
+).length;
             
         const total=
         tasks.filter(t=>t.project_id==p.id).length;
@@ -1405,9 +1428,15 @@ if (t.status === "todo") {
         ).length;
         
         const percent =
-        total==0
-        ?0
-        :Math.round(done/total*100);
+total==0
+?0
+:
+Math.round(
+(
+(done*1)+(progress*0.5)
+)
+/total*100
+);
         
         const nearest =
         tasks
@@ -1446,6 +1475,16 @@ ${p.description||"-"}
 class="progress-fill"
 style="width:${percent}%;background:${p.color};">
 </div>
+
+
+</div>
+
+<div style="
+font-size:12px;
+color:gray;
+">
+
+${done}/${total} Task selesai
 
 </div>
 
@@ -1620,9 +1659,15 @@ onclick="event.stopPropagation();confirmDelete(${p.id},'project')">
 
             showToast("Status berhasil diubah","success");
 
-            refreshAll();
+            await refreshAll();
 
-        }
+if(document.getElementById("projectDetailPage").style.display=="block"){
+
+    openProject(
+        document.getElementById("taskProject").value
+    );
+
+}
 
         // --- Modals & CRUD Project ---
         function openProjectModal() {
@@ -2088,6 +2133,7 @@ document
             showToast("Berhasil diarsipkan","success");
 
             refreshAll();
+            await renderArchive();
 
         } 
 
@@ -2315,8 +2361,9 @@ async function renderArchive(){
     }
 
     const { data: projects } = await client
-        .from("projects")
-        .select("*");
+.from("projects")
+.select("*")
+.eq("archived", false);
 
     let html = "";
     const keyword =
@@ -2445,9 +2492,9 @@ year:"numeric"
         "success"
     );
 
-    renderArchive();
+    await renderArchive();
 
-    refreshAll();
+await refreshAll();
 
 }
         async function deleteForever(id){
@@ -2473,7 +2520,9 @@ year:"numeric"
         "success"
     );
 
-    renderArchive();
+    await renderArchive();
+
+await refreshAll();
 
 }
         
