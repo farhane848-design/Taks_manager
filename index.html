@@ -460,6 +460,88 @@ background:#FEE2E2;
 transform:translateY(-2px);
 
 }
+         .archive-stats{
+
+display:grid;
+
+grid-template-columns:repeat(2,1fr);
+
+gap:16px;
+
+margin-bottom:20px;
+
+}
+
+.archive-stat-card{
+
+background:#fff;
+
+border-radius:18px;
+
+padding:20px;
+
+display:flex;
+
+align-items:center;
+
+gap:16px;
+
+box-shadow:0 5px 18px rgba(0,0,0,.05);
+
+}
+
+.archive-stat-card i{
+
+font-size:28px;
+
+color:#2563EB;
+
+}
+
+.archive-stat-card span{
+
+font-size:13px;
+
+color:#6B7280;
+
+}
+
+.archive-stat-card h2{
+
+margin-top:6px;
+
+}
+        .archive-toolbar{
+
+    margin:20px 0;
+
+}
+
+.archive-toolbar input{
+
+    width:100%;
+
+    padding:12px 16px;
+
+    border:1px solid #D1D5DB;
+
+    border-radius:12px;
+
+    font-size:14px;
+
+    outline:none;
+
+    transition:.2s;
+
+}
+
+.archive-toolbar input:focus{
+
+    border-color:#2563EB;
+
+    box-shadow:0 0 0 3px rgba(37,99,235,.15);
+
+}
     </style>
 </head>
 <body>
@@ -748,10 +830,13 @@ Done
         display:flex;
         justify-content:space-between;
         align-items:center;
-        margin-bottom:20px;">
+        margin-bottom:20px;"><h2>Arsip Task</h2>
 
-        <h2>Arsip Task</h2>
-        <div class="archive-toolbar">
+<p style="color:var(--text-muted);margin:8px 0 20px;">
+    Task yang telah diarsipkan masih dapat dipulihkan.
+</p>
+
+<div class="archive-toolbar">
 
     <input
         type="text"
@@ -760,7 +845,8 @@ Done
         oninput="renderArchive()">
 
 </div>
-        <div class="archive-stats">
+
+<div class="archive-stats">
 
     <div class="archive-stat-card">
 
@@ -792,7 +878,6 @@ Done
 
 </div>
 
-    </div>
 
     <section class="table-container">
 
@@ -1028,8 +1113,14 @@ testSupabase();
                 return;
             }
 
-            document.getElementById("archiveTotalTask").innerText =
-tasks.length;
+            const archiveTotal =
+document.getElementById("archiveTotalTask");
+
+if(archiveTotal){
+
+    archiveTotal.innerText = tasks.length;
+
+}
             const uniqueProject = new Set();
 
 tasks.forEach(task=>{
@@ -1065,8 +1156,9 @@ uniqueProject.size;
 
             const { data, error } =
                 await client
-                    .from("projects")
-                    .select("*")
+.from("projects")
+.select("*")
+.eq("archived",false)
                     .order("id");
 
             if (error) {
@@ -1112,7 +1204,10 @@ uniqueProject.size;
                 .from("tasks")
                 .select("*")
                 .eq("archived",false),
-                client.from("projects").select("*")
+                client
+.from("projects")
+.select("*")
+.eq("archived",false)
             ]);
 
             if (taskError || projectError) {
@@ -1229,6 +1324,7 @@ if (t.status === "todo") {
                     ? 'done'
                     : 'todo'
         }')">
+        </td>
 <td>
                             <div class="task-title-cell">
                                 <span class="task-title">${t.title}</span>
@@ -2271,7 +2367,15 @@ document
 
                 <td>${project ? project.name : "-"}</td>
 
-                <td>${task.archived_at ?? "-"}</td>
+                <td>const archivedDate =
+new Date(task.archived_at)
+.toLocaleDateString(
+"id-ID",
+{
+day:"2-digit",
+month:"short",
+year:"numeric"
+});</td>
 
                 <td>
 
@@ -2453,88 +2557,7 @@ async function showArchive(event){
     await renderArchive();
 
 }
-        .archive-stats{
-
-display:grid;
-
-grid-template-columns:repeat(2,1fr);
-
-gap:16px;
-
-margin-bottom:20px;
-
-}
-
-.archive-stat-card{
-
-background:#fff;
-
-border-radius:18px;
-
-padding:20px;
-
-display:flex;
-
-align-items:center;
-
-gap:16px;
-
-box-shadow:0 5px 18px rgba(0,0,0,.05);
-
-}
-
-.archive-stat-card i{
-
-font-size:28px;
-
-color:#2563EB;
-
-}
-
-.archive-stat-card span{
-
-font-size:13px;
-
-color:#6B7280;
-
-}
-
-.archive-stat-card h2{
-
-margin-top:6px;
-
-}
-        .archive-toolbar{
-
-    margin:20px 0;
-
-}
-
-.archive-toolbar input{
-
-    width:100%;
-
-    padding:12px 16px;
-
-    border:1px solid #D1D5DB;
-
-    border-radius:12px;
-
-    font-size:14px;
-
-    outline:none;
-
-    transition:.2s;
-
-}
-
-.archive-toolbar input:focus{
-
-    border-color:#2563EB;
-
-    box-shadow:0 0 0 3px rgba(37,99,235,.15);
-
-}
+       
     </script>
 
 
