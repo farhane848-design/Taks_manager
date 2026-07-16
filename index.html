@@ -826,11 +826,7 @@ Done
 <!-- ARCHIVE PAGE -->
 <div id="archivePage" style="display:none;">
 
-    <div style="
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        margin-bottom:20px;"><h2>Arsip Task</h2>
+<h2>Arsip Task</h2>
 
 <p style="color:var(--text-muted);margin:8px 0 20px;">
     Task yang telah diarsipkan masih dapat dipulihkan.
@@ -1129,10 +1125,15 @@ tasks.forEach(task=>{
 
 });
 
-document.getElementById(
-"archiveProjectCount"
-).innerText=
-uniqueProject.size;
+const archiveProject =
+document.getElementById("archiveProjectCount");
+
+if(archiveProject){
+
+    archiveProject.innerText =
+        uniqueProject.size;
+
+}
 
             const today = new Date().toISOString().split("T")[0];
 
@@ -1564,6 +1565,7 @@ onclick="event.stopPropagation();confirmDelete(${p.id},'project')">
             document.getElementById("projectPage").style.display="none";
             document.getElementById("taskPage").style.display="none";
             document.getElementById("projectDetailPage").style.display="block";
+            document.getElementById("archivePage").style.display="none";
         
             document.querySelector(".toolbar").style.display="none";
             document.querySelector(".stats-grid").style.display="none";
@@ -1706,6 +1708,8 @@ task.status==="progress"
         document.getElementById("projectDetailPage").style.display="none";
         
         document.getElementById("projectPage").style.display="block";
+
+        document.getElementById("archivePage").style.display="none";
         
         document.querySelector(".toolbar").style.display="none";
         
@@ -2359,7 +2363,21 @@ document
             const project =
                 projects.find(p=>p.id==task.project_id);
 
-            html += `
+    const archivedDate =
+task.archived_at
+?
+new Date(task.archived_at).toLocaleDateString(
+"id-ID",
+{
+day:"2-digit",
+month:"short",
+year:"numeric"
+}
+)
+:
+"-";
+    
+    html += `
 
             <tr>
 
@@ -2367,15 +2385,7 @@ document
 
                 <td>${project ? project.name : "-"}</td>
 
-                <td>const archivedDate =
-new Date(task.archived_at)
-.toLocaleDateString(
-"id-ID",
-{
-day:"2-digit",
-month:"short",
-year:"numeric"
-});</td>
+                <td>${archivedDate}</td>
 
                 <td>
 
@@ -2492,6 +2502,8 @@ document.getElementById("projectPage").style.display="none";
 
 document.getElementById("projectDetailPage").style.display="none";
 
+document.getElementById("archivePage").style.display="none";
+
 document.querySelector(".toolbar").style.display="flex";
 
 document.querySelector(".stats-grid").style.display="grid";
@@ -2521,6 +2533,7 @@ document.getElementById("projectPage").style.display="block";
 
 document.getElementById("projectDetailPage").style.display="none";
 
+document.getElementById("archivePage").style.display="none";
 
 document.querySelector(".stats-grid").style.display="none";
 
