@@ -293,20 +293,6 @@ gap:20px;
 
 }
 
-.project-card{
-
-background:#fff;
-
-border-radius:20px;
-
-padding:20px;
-
-cursor:pointer;
-
-transition: transform .2s ease,
-            box-shadow .2s ease;
-
-}
 
 .project-card:hover{
 
@@ -771,6 +757,31 @@ margin-top:6px;
     background:#FEE2E2;
 
 }
+  .archive-action{
+
+display:flex;
+
+flex-direction:column;
+
+gap:8px;
+
+}
+
+.archive-btn{
+
+width:120px;
+
+justify-content:center;
+
+}
+
+.archive-delete{
+
+background:#EF4444;
+
+color:white;
+
+}
     </style>
 </head>
 <body>
@@ -976,11 +987,15 @@ Done
 
                     <div class="empty-state">
 
-                        <i class="fa-solid fa-spinner fa-spin"></i>
+<i class="fa-solid fa-spinner fa-spin"></i>
 
-                        <p>Memuat data...</p>
+<p>
 
-                    </div>
+Memuat data...
+
+</p>
+
+</div>
 
                 </td>
 
@@ -1309,13 +1324,31 @@ testSupabase();
             refreshAll();
         });
 
-        async function refreshAll() {
-            await Promise.all([
-                loadStats(),
-                loadProjectDropdown(),
-                renderTable()
-            ]);
-        }
+       async function refreshAll(){
+
+await Promise.all([
+
+loadStats(),
+
+loadProjectDropdown(),
+
+renderTable()
+
+]);
+
+if(
+
+document.getElementById("archivePage")
+
+.style.display==="block"
+
+){
+
+await renderArchive();
+
+}
+
+}
 
         // --- UI Updates ---
         async function loadStats() {
@@ -1342,16 +1375,19 @@ document.getElementById("archiveTotalTask");
 
 if(archiveTotal){
 
-    archiveTotal.innerText = tasks.length;
+    archiveTotal.innerText=
+
+archiveTasks.length;
 
 }
-            const uniqueProject = new Set();
+            const uniqueProject=new Set();
 
-tasks.forEach(task=>{
+archiveTasks.forEach(task=>{
 
-    uniqueProject.add(task.project_id);
+uniqueProject.add(task.project_id);
 
 });
+            
 
 const archiveProject =
 document.getElementById("archiveProjectCount");
@@ -1629,7 +1665,6 @@ if (t.status === "todo") {
         const {data:projects}=await client
        .from("projects")
 .select("*")
-.eq("archived",false)
         .order("id");
         
         const {data:tasks}=await client
@@ -1926,19 +1961,40 @@ if(
             document.getElementById('projectModal').classList.add('active');
         }
         function renderProjectCards(tasks){
-        
-            const container =
-                document.getElementById("projectTaskCards");
-        
-            let html = "";
-        
-            tasks.forEach(task=>{
-        
-                html += `
-                <div class="project-card">
 
-    <div class="project-top-line"
-         style="background:${p.color};">
+const container=document.getElementById("projectTaskCards");
+
+let html="";
+
+tasks.forEach(task=>{
+
+html+=`
+
+<div class="project-card">
+
+<h3>${task.title}</h3>
+
+<p>
+
+${task.description || "-"}
+
+</p>
+
+<div>
+
+📅 ${task.deadline}
+
+</div>
+
+</div>
+
+`;
+
+});
+
+container.innerHTML=html;
+
+}
     </div>
 
     <div class="project-body">
@@ -2743,15 +2799,35 @@ document
 
         tasks
 
-.filter(task=>
+.filter(task=>{
 
-(task.title||"")
+const project=
+
+projects.find(
+
+p=>p.id==task.project_id
+
+);
+
+return(
+
+task.title
 
 .toLowerCase()
 
 .includes(keyword)
 
-)
+||
+
+(project?.name||"")
+
+.toLowerCase()
+
+.includes(keyword)
+
+);
+
+})
 
 .forEach(task=>{
 
@@ -2778,12 +2854,24 @@ year:"numeric"
 
                 <td>${task.title}</td>
 
-                <td>${project ? project.name : "-"}</td>
+                <td>
+
+<span
+
+class="badge badge-project">
+
+<i class="fa-solid fa-folder"></i>
+
+${project.name}
+
+</span>
+
+</td>
 
                 <td>${archivedDate}</td>
 
                 <td>
-
+<td class="archive-action">
                     <button
                         class="btn btn-outline"
                         onclick="restoreTask(${task.id})">
