@@ -991,6 +991,17 @@ font-weight:500;
 color:#64748B;
 
 }
+   .task-meta{
+
+display:flex;
+
+gap:10px;
+
+margin-top:12px;
+
+flex-wrap:wrap;
+
+}
     </style>
 </head>
 <body>
@@ -1194,7 +1205,7 @@ Done
 
                 <td colspan="7">
 
-                    <div class="empty-state">
+                    <div class="empty-state project-empty">
 
 <i class="fa-solid fa-spinner fa-spin"></i>
 
@@ -2059,6 +2070,14 @@ ${p.description || "-"}
 
 </p>
 
+<div class="project-progress-header">
+
+<span>Progress</span>
+
+<strong>${percent}%</strong>
+
+</div>
+
 <div class="progress">
 
 <div
@@ -2075,17 +2094,7 @@ ${done}/${total} Task selesai
 
 </div>
 
-<div class="project-percent">
 
-${percent}%
-
-<small>
-
-Project Progress
-
-</small>
-
-</div>
 <div class="project-stat">
 
     <div class="project-stat-item">
@@ -2127,6 +2136,7 @@ ${nearest ? nearest.deadline : "-"}
 <div class="project-action-group">
 
 <button class="btn-edit">
+onclick='event.stopPropagation();editProject(${JSON.stringify(p)})'>
 
 <i class="fa-solid fa-pen"></i>
 
@@ -2135,6 +2145,8 @@ Edit
 </button>
 
 <button class="btn-delete">
+onclick="event.stopPropagation();confirmDelete(${p.id},'project')">
+
 
 <i class="fa-solid fa-trash"></i>
 
@@ -2142,7 +2154,6 @@ Hapus
 
 </button>
 
-</div>
 
 </div>
 </div>
@@ -2332,27 +2343,28 @@ ${task.description || "-"}
 
 </p>
 
-<div
-style="
-display:flex;
-gap:10px;
-margin-top:12px;
-flex-wrap:wrap;
-">
+<div class="task-meta">
 
 <span class="badge">
 
-📅
+<i class="fa-regular fa-calendar"></i>
 
-${task.deadline}
+${new Date(task.deadline).toLocaleDateString(
+    "id-ID",
+    {
+        day:"2-digit",
+        month:"short",
+        year:"numeric"
+    }
+)}
 
 </span>
 
-<span class="badge status-${task.status}">
-
-${task.status}
-
-</span>
+${task.status==="todo"
+?"Todo"
+:task.status==="progress"
+?"Progress"
+:"Done"}
 
 ${task.attachment
 ?`
@@ -3256,7 +3268,6 @@ dengan pencarian.
 
     await renderArchive();
 
-await refreshAll();
 
 }
         async function deleteForever(id){
