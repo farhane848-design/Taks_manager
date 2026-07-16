@@ -782,6 +782,37 @@ background:#EF4444;
 color:white;
 
 }
+   .archive-btn{
+
+width:120px;
+
+height:40px;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+gap:8px;
+
+border-radius:10px;
+
+}
+
+.archive-delete{
+
+background:#EF4444;
+
+color:white;
+
+}
+
+.archive-delete:hover{
+
+background:#DC2626;
+
+}
     </style>
 </head>
 <body>
@@ -1327,14 +1358,30 @@ testSupabase();
        async function refreshAll(){
 
 await Promise.all([
-
 loadStats(),
-
 loadProjectDropdown(),
-
 renderTable()
-
 ]);
+
+if(
+document.getElementById("projectPage")
+.style.display=="block"
+){
+
+await renderProjects();
+
+}
+
+if(
+document.getElementById("archivePage")
+.style.display=="block"
+){
+
+await renderArchive();
+
+}
+
+}
 
 if(
 
@@ -1360,20 +1407,24 @@ await renderArchive();
 .eq("archived",false);
 
             const { data: tasks, error: errTask } =
-    await client
-        .from("tasks")
-        .select("*")
-        .eq("archived", false);
+await client
+.from("tasks")
+.select("*")
+.eq("archived",false);
 
-            if (errProject || errTask || errArchive) {
-    console.error(errProject || errTask || errArchive);
-    return;
-}
 const { data: archiveTasks, error: errArchive } =
-    await client
-        .from("tasks")
-        .select("*")
-        .eq("archived", true);
+await client
+.from("tasks")
+.select("*")
+.eq("archived",true);
+
+if(errProject || errTask || errArchive){
+
+    console.error(errProject || errTask || errArchive);
+
+    return;
+
+}
             const archiveTotal =
 document.getElementById("archiveTotalTask");
 
@@ -1436,7 +1487,45 @@ if (archiveProject) {
 
             if (error) {
                 console.error(error);
-                return;
+                document.getElementById("archiveTableBody").innerHTML=`
+
+<tr>
+
+<td colspan="4">
+
+<div class="empty-state">
+
+<i class="fa-solid fa-triangle-exclamation"></i>
+
+<h3>
+
+Gagal Memuat Arsip
+
+</h3>
+
+<p>
+
+Silakan coba lagi.
+
+</p>
+
+<button
+class="btn btn-primary"
+onclick="renderArchive()">
+
+Refresh
+
+</button>
+
+</div>
+
+</td>
+
+</tr>
+
+`;
+
+return;
             }
 
             const select =
@@ -1483,10 +1572,49 @@ if (archiveProject) {
 .eq("archived",false)
             ]);
 
-            if (taskError || projectError) {
-                console.error(taskError || projectError);
-                return;
-            }
+            if(taskError || projectError){
+
+console.error(taskError || projectError);
+
+tableBody.innerHTML=`
+
+<tr>
+
+<td colspan="7">
+
+<div class="empty-state">
+
+<i class="fa-solid fa-triangle-exclamation"></i>
+
+<h3>Gagal Memuat Data</h3>
+
+<p>
+
+Periksa koneksi atau database.
+
+</p>
+
+<button
+
+class="btn btn-primary"
+
+onclick="refreshAll()">
+
+Coba Lagi
+
+</button>
+
+</div>
+
+</td>
+
+</tr>
+
+`;
+
+return;
+
+}
 
             // Apply Filters
             const searchQ = document.getElementById('searchInput').value.toLowerCase();
@@ -1667,8 +1795,9 @@ if (t.status === "todo") {
         async function renderProjects(){
 
         const {data:projects}=await client
-       .from("projects")
+       ..from("projects")
 .select("*")
+.eq("archived", false)
         .order("id");
         
         const {data:tasks}=await client
@@ -1874,12 +2003,27 @@ onclick="event.stopPropagation();confirmDelete(${p.id},'project')">
         async function openProject(projectId){
             currentProjectId = projectId;
 
-            const {data:project}=await client
-                .from("projects")
+            const {
+    data: project,
+    error
+} = await client
+.from("projects")
 .select("*")
-.eq("id",projectId)
-.eq("archived",false)
+.eq("id", projectId)
+.eq("archived", false)
 .single();
+            if (error || !project) {
+
+    console.error(error);
+
+    showToast(
+        "Project tidak ditemukan",
+        "danger"
+    );
+
+    return;
+
+}
         
             const {data:tasks}=await client
 .from("tasks")
@@ -1966,7 +2110,45 @@ if(
         }
         function renderProjectCards(tasks){
 
-const container=document.getElementById("projectTaskCards");
+if(tasks.length===0){
+
+container.innerHTML=`
+
+<div class="empty-state">
+
+<i class="fa-solid fa-folder-open"></i>
+
+<h3>
+
+Belum Ada Task
+
+</h3>
+
+<p>
+
+Tambahkan task pertama
+untuk project ini.
+
+</p>
+
+<button
+class="btn btn-primary"
+onclick="openTaskModal()">
+
+<i class="fa-solid fa-plus"></i>
+
+Tambah Task
+
+</button>
+
+</div>
+
+`;
+
+return;
+
+}
+            const container=document.getElementById("projectTaskCards");
 
 let html="";
 
@@ -2153,9 +2335,7 @@ task.status==="progress"
                 </div>`;
             }
         
-            container.innerHTML = html;
-        
-        }
+           
         function backToProjects(){
 
         document.getElementById("projectDetailPage").style.display="none";
@@ -2768,10 +2948,10 @@ async function renderArchive(){
         return;
     }
 
-    const { data: projects } = await client
+    const { data: projects } =
+await client
 .from("projects")
-.select("*")
-.eq("archived", false);
+.select("*");
 
     let html = "";
     const keyword =
@@ -2866,7 +3046,7 @@ class="badge badge-project">
 
 <i class="fa-solid fa-folder"></i>
 
-${project.name}
+${project?.name || "-"}
 
 </span>
 
@@ -2874,24 +3054,24 @@ ${project.name}
 
                 <td>${archivedDate}</td>
 
-                <td>
 <td class="archive-action">
                     <button
-                        class="btn btn-outline"
-                        onclick="restoreTask(${task.id})">
+class="btn btn-outline archive-btn">
 
-                        Restore
+<i class="fa-solid fa-rotate-left"></i>
 
-                    </button>
+Restore
 
-                    <button
-                        class="btn"
-                        style="background:#EF4444;color:white;"
-                        onclick="deleteForever(${task.id})">
+</button>
 
-                        Hapus
+<button
+class="btn archive-btn archive-delete">
 
-                    </button>
+<i class="fa-solid fa-trash"></i>
+
+Hapus
+
+</button>
 
                 </td>
 
@@ -2903,6 +3083,36 @@ ${project.name}
 
     }
 
+    if(html===""){
+
+html=`
+
+<tr>
+
+<td colspan="4">
+
+<div class="empty-state">
+
+<i class="fa-solid fa-magnifying-glass"></i>
+
+<h3>Tidak Ditemukan</h3>
+
+<p>
+
+Tidak ada task yang sesuai
+dengan pencarian.
+
+</p>
+
+</div>
+
+</td>
+
+</tr>
+
+`;
+
+}
     document.getElementById("archiveTableBody").innerHTML = html;
 
 }
