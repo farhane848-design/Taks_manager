@@ -1046,7 +1046,7 @@ const client = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_KEY
 );
-
+let currentProjectId = null;
 async function testSupabase() {
 
     const { data, error } = await client
@@ -1229,28 +1229,45 @@ if(archiveProject){
             let allowedProjectIds =projects.map(p => p.id);
             
             const filteredTasks = tasks.filter(t => {
-                let projectName =
-(proj.name || "").toLowerCase();
 
-let matchSearch =
+    const proj =
+        projects.find(p => p.id == t.project_id) || {};
 
-t.title.toLowerCase().includes(searchQ)
+    const projectName =
+        (proj.name || "").toLowerCase();
 
-||
+    let matchSearch =
 
-(t.description||"")
+        t.title.toLowerCase().includes(searchQ)
 
-.toLowerCase()
+        ||
 
-.includes(searchQ)
+        (t.description || "")
+        .toLowerCase()
+        .includes(searchQ)
 
-||
+        ||
 
-projectName.includes(searchQ);
-                let matchProj = filterProj ? t.project_id == filterProj : true;
-                let matchStat = filterStat ? t.status == filterStat : true;
-                return matchSearch && matchProj && matchStat && allowedProjectIds.includes(Number(t.project_id));
-            });
+        projectName.includes(searchQ);
+
+    let matchProj =
+        filterProj
+            ? t.project_id == filterProj
+            : true;
+
+    let matchStat =
+        filterStat
+            ? t.status == filterStat
+            : true;
+
+    return (
+        matchSearch &&
+        matchProj &&
+        matchStat &&
+        allowedProjectIds.includes(Number(t.project_id))
+    );
+
+});
 
             // Sorting
             filteredTasks.sort((a, b) => {
@@ -1587,6 +1604,7 @@ onclick="event.stopPropagation();confirmDelete(${p.id},'project')">
         }
 
         async function openProject(projectId){
+            currentProjectId = projectId;
 
             const {data:project}=await client
                 .from("projects")
@@ -1661,14 +1679,15 @@ onclick="event.stopPropagation();confirmDelete(${p.id},'project')">
 
             await refreshAll();
 
-if(document.getElementById("projectDetailPage").style.display=="block"){
+if(
+    document.getElementById("projectDetailPage").style.display == "block"
+    && currentProjectId
+){
 
-    openProject(
-        document.getElementById("taskProject").value
-    );
+    await openProject(currentProjectId);
 
 }
-
+}
         // --- Modals & CRUD Project ---
         function openProjectModal() {
             document.getElementById('project_id').value = '';
