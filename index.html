@@ -1671,8 +1671,6 @@ if (archiveProject) {
 
 }
 
-            }
-
             const select =
                 document.getElementById("filterProject");
 
@@ -1698,6 +1696,7 @@ if (archiveProject) {
             select.innerHTML = filterHtml;
             taskProjectSelect.innerHTML = formHtml;
         }
+        
 
         async function renderTable() {
             const tableBody = document.getElementById('taskTableBody');
@@ -2171,7 +2170,6 @@ Hapus
 
 </div>
         
-        </div>
         
         `;
         
