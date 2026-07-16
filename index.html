@@ -876,6 +876,51 @@ background:#DCFCE7;
 color:#166534;
 
 }
+        .project-stat{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    gap:12px;
+
+    margin-top:18px;
+
+}
+
+.project-stat-item{
+
+    flex:1;
+
+    background:#F8FAFC;
+
+    border-radius:12px;
+
+    padding:12px;
+
+    text-align:center;
+
+}
+
+.project-stat-item small{
+
+    display:block;
+
+    color:#64748B;
+
+    margin-bottom:6px;
+
+    font-size:12px;
+
+}
+
+.project-stat-item strong{
+
+    font-size:18px;
+
+    color:#1E293B;
+
+}
     </style>
 </head>
 <body>
@@ -1539,7 +1584,7 @@ if (archiveProject) {
     "danger"
 );
 
-return;`
+return;
 
 <tr>
 
@@ -1865,7 +1910,44 @@ if (t.status === "todo") {
         let html="";
 
         
-        
+        if(projects.length===0){
+
+container.innerHTML=`
+
+<div class="empty-state">
+
+<i class="fa-solid fa-folder-open"></i>
+
+<h3>
+
+Belum Ada Project
+
+</h3>
+
+<p>
+
+Silakan tambahkan project pertama.
+
+</p>
+
+<button
+
+class="btn btn-primary"
+
+onclick="openProjectModal()">
+
+Tambah Project
+
+</button>
+
+</div>
+
+`;
+
+return;
+
+}
+            
         projects.forEach(p=>{
 
             const pending =
@@ -1956,48 +2038,34 @@ ${done}/${total} Task selesai
 
 </div>
 
-<div style="font-weight:600">
-
-
 <div class="project-percent">
+    ${percent}%
 </div>
+<div class="project-stat">
 
-${percent}%
+    <div class="project-stat-item">
 
-</div>
+        <small>Todo</small>
 
-<div>
+        <strong>${todo}</strong>
 
-Todo :
-<b>
+    </div>
 
-${todo}
+    <div class="project-stat-item">
 
-</b>
+        <small>Progress</small>
 
-</div>
+        <strong>${progress}</strong>
 
-<div>
+    </div>
 
-Progress :
+    <div class="project-stat-item">
 
-<b>
+        <small>Done</small>
 
-${progress}
+        <strong>${done}</strong>
 
-</b>
-
-</div>
-
-<div>
-
-Done :
-
-<b>
-
-${done}
-
-</b>
+    </div>
 
 </div>
 
@@ -2027,8 +2095,6 @@ Edit
 
 </button>
 </div>
-
-<div class="project-footer">
 
 <button
 class="btn-delete"
@@ -2216,7 +2282,11 @@ html+=`
 
 <div class="table-container">
 
-<h3>${task.title}</h3>
+<h3>
+
+${task.title}
+
+</h3>
 
 <p>
 
@@ -2224,9 +2294,39 @@ ${task.description || "-"}
 
 </p>
 
-<div>
+<div
+style="
+display:flex;
+gap:10px;
+margin-top:12px;
+flex-wrap:wrap;
+">
 
-📅 ${task.deadline}
+<span class="badge">
+
+📅
+
+${task.deadline}
+
+</span>
+
+<span class="badge status-${task.status}">
+
+${task.status}
+
+</span>
+
+${task.attachment
+?`
+<span class="badge">
+
+📎 Lampiran
+
+</span>
+`
+:""}
+
+</div>
 
 </div>
 
@@ -2241,6 +2341,7 @@ container.innerHTML=html;
 }
    
         function backToProjects(){
+            currentProjectId = null;
 
         document.getElementById("projectDetailPage").style.display="none";
         
@@ -2394,7 +2495,14 @@ async function uploadAttachment(file){
             if (document.getElementById('taskProject').options.length === 0) {
                 showToast("Silakan buat Project terlebih dahulu", "warning");
                 return;
+                
             }
+            if(currentProjectId){
+
+    document.getElementById("taskProject").value =
+        currentProjectId;
+
+}
             document.getElementById('taskModal').classList.add('active');
         }
 
@@ -2474,12 +2582,31 @@ task.status;
 
             if(fileInput.files.length){
 
-                attachment =
-                    await uploadAttachment(
-                        fileInput.files[0]
-                    );
+    try{
 
-            }else{
+        attachment =
+            await uploadAttachment(
+                fileInput.files[0]
+            );
+
+    }catch(err){
+
+        console.error(err);
+
+        showToast(
+            "Upload lampiran gagal",
+            "danger"
+        );
+
+        btn.innerHTML="Simpan Task";
+
+        btn.disabled=false;
+
+        return;
+
+    }
+
+}else{
 
                 attachment =
                     document
@@ -2986,7 +3113,7 @@ ${project?.name || "-"}
 
                 <td>
 <span class="badge status-${task.status}">
-${tasl.status}
+${task.status}
 </span>
 </td>
 
