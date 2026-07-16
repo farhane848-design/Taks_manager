@@ -862,16 +862,16 @@ Done
     <div class="modal-overlay" id="deleteModal">
         <div class="modal" style="width:400px;">
             <div class="modal-header">
-                <h2>Konfirmasi Hapus</h2>
+                <h2>Arsipkan Data</h2>
             </div>
             <div class="modal-body">
-                <p id="deleteMsg">Apakah Anda yakin ingin menghapus item ini?</p>
+                <p id="deleteMsg">Apakah Anda yakin ingin mengarsipkan item ini?</p>
                 <input type="hidden" id="deleteTargetId">
                 <input type="hidden" id="deleteTargetType">
             </div>
             <div class="modal-footer">
                 <button class="btn btn-outline" onclick="closeModal('deleteModal')">Batal</button>
-                <button class="btn btn-primary" style="background:var(--danger);" onclick="executeDelete()">Ya, Hapus</button>
+                <button class="btn btn-primary" style="background:var(--danger);" onclick="executeDelete()">Ya, Arsipkan</button>
             </div>
         </div>
     </div>
@@ -930,10 +930,16 @@ testSupabase();
         async function loadStats() {
 
             const { data: projects, error: errProject } =
-                await client.from("projects").select("*");
+                await client
+.from("projects")
+.select("*")
+.eq("archived",false);
 
             const { data: tasks, error: errTask } =
-                await client.from("tasks").select("*");
+    await client
+        .from("tasks")
+        .select("*")
+        .eq("archived", false);
 
             if (errProject || errTask) {
                 console.error(errProject || errTask);
@@ -1005,7 +1011,10 @@ testSupabase();
                 { data: tasks, error: taskError },
                 { data: projects, error: projectError }
             ] = await Promise.all([
-                client.from("tasks").select("*"),
+                client
+                .from("tasks")
+                .select("*")
+                .eq("archived",false),
                 client.from("projects").select("*")
             ]);
 
@@ -1158,13 +1167,15 @@ if (t.status === "todo") {
         async function renderProjects(){
 
         const {data:projects}=await client
-        .from("projects")
-        .select("*")
+       .from("projects")
+.select("*")
+.eq("archived",false)
         .order("id");
         
         const {data:tasks}=await client
-        .from("tasks")
-        .select("*");
+.from("tasks")
+.select("*")
+.eq("archived",false);
         
         const container=
         document.getElementById("projectList");
@@ -1346,14 +1357,16 @@ onclick="event.stopPropagation();confirmDelete(${p.id},'project')">
 
             const {data:project}=await client
                 .from("projects")
-                .select("*")
-                .eq("id",projectId)
-                .single();
+.select("*")
+.eq("id",projectId)
+.eq("archived",false)
+.single();
         
             const {data:tasks}=await client
-                .from("tasks")
-                .select("*")
-                .eq("project_id",projectId);
+.from("tasks")
+.select("*")
+.eq("project_id",projectId)
+.eq("archived",false);
         
             document.getElementById("projectPage").style.display="none";
             document.getElementById("taskPage").style.display="none";
@@ -1808,12 +1821,26 @@ document
         }
 
         // --- Delete Logic ---
-        function confirmDelete(id, type) {
-            document.getElementById('deleteTargetId').value = id;
-            document.getElementById('deleteTargetType').value = type;
-            document.getElementById('deleteMsg').innerText = `Apakah Anda yakin ingin menghapus ${type} ini?`;
-            document.getElementById('deleteModal').classList.add('active');
-        }
+        function confirmDelete(id,type){
+
+    document.getElementById("deleteTargetId").value=id;
+    document.getElementById("deleteTargetType").value=type;
+
+    if(type=="task"){
+
+        document.getElementById("deleteMsg").innerHTML=
+        "Apakah Anda yakin ingin <b>mengarsipkan Task</b>?<br><br>Task masih dapat dipulihkan melalui menu Arsip.";
+
+    }else{
+
+        document.getElementById("deleteMsg").innerHTML=
+        "Apakah Anda yakin ingin <b>mengarsipkan Project</b>?<br><br>Project masih dapat dipulihkan melalui menu Arsip.";
+
+    }
+
+    document.getElementById("deleteModal").classList.add("active");
+
+}
 
         async function executeDelete(){
 
@@ -1825,17 +1852,29 @@ document
 
             if(type=="task"){
 
-                ({error}=await client
-                    .from("tasks")
-                    .delete()
-                    .eq("id",id));
+    ({error}=await client
+        .from("tasks")
+        .update({
 
-            }else{
+            archived:true,
+
+            archived_at:new Date().toISOString()
+
+        })
+        .eq("id",id));
+
+}else{
 
                 ({error}=await client
                     .from("projects")
-                    .delete()
-                    .eq("id",id));
+.update({
+
+    archived:true,
+
+    archived_at:new Date().toISOString()
+
+})
+.eq("id",id));
 
             }
 
@@ -1849,7 +1888,7 @@ document
 
             closeModal("deleteModal");
 
-            showToast("Berhasil dihapus","success");
+            showToast("Berhasil diarsipkan","success");
 
             refreshAll();
 
