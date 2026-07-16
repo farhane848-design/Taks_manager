@@ -1534,11 +1534,16 @@ if (archiveProject) {
 
             if (error) {
                 console.error(error);
-                document.getElementById("archiveTableBody").innerHTML=`
+                showToast(
+    "Gagal memuat project",
+    "danger"
+);
+
+return;`
 
 <tr>
 
-<td colspan="4">
+<td colspan="6">
 
 <div class="empty-state">
 
@@ -1817,32 +1822,7 @@ if (t.status === "todo") {
                         <td>
                             <span class="badge badge-project"><i class="fa-solid fa-folder" style="color:${proj.color}"></i> ${proj.name}</span>
                         </td>
-                        <td>
-
-                        <span class="badge status-${task.status}">
                         
-                        ${task.status==="todo"
-                        ?"Todo"
-                        :task.status==="progress"
-                        ?"Progress"
-                        :"Done"}
-                        
-                        </span>
-                        
-                        </td>
-                        
-                        <td>
-                        
-                        <i class="fa-regular fa-calendar"></i>
-                        
-                        ${task.deadline || "-"}
-                        
-                        </td>
-                        <td>
-
-                        ${archivedDate}
-                        
-                        </td>
 
                         <td>${deadlineBadge}</td>
                         <td>${statusHtml}</td>
@@ -1980,6 +1960,7 @@ ${done}/${total} Task selesai
 
 
 <div class="project-percent">
+</div>
 
 ${percent}%
 
@@ -2034,6 +2015,8 @@ ${nearest
 
 </div>
 
+<div class="project-footer">
+
 <button
 class="btn-edit"
 onclick='event.stopPropagation();editProject(${JSON.stringify(p)})'>
@@ -2043,6 +2026,9 @@ onclick='event.stopPropagation();editProject(${JSON.stringify(p)})'>
 Edit
 
 </button>
+</div>
+
+<div class="project-footer">
 
 <button
 class="btn-delete"
@@ -2053,6 +2039,7 @@ onclick="event.stopPropagation();confirmDelete(${p.id},'project')">
 Hapus
 
 </button>
+</div>
 
 </div>
 
@@ -2239,7 +2226,7 @@ ${task.description || "-"}
 
 <div>
 
-📅 ${t.deadline}
+📅 ${task.deadline}
 
 </div>
 
@@ -2417,12 +2404,12 @@ async function uploadAttachment(file){
             document.getElementById('taskId').value = task.id;
             document.getElementById('taskProject').value = task.project_id;
             document.getElementById('taskTitle').value = task.title;
-            document.getElementById('taskDeadline').value = t.deadline;
+            document.getElementById('taskDeadline').value = task.deadline;
             document.getElementById('taskDesc').value = task.description;
             document
 .getElementById("taskStatus")
 .value=
-t.status;
+task.status;
             
             if(task.attachment){
 
@@ -2892,7 +2879,7 @@ document
         html = `
         <tr>
 
-            <td colspan="4">
+            <td colspan="6">
 
                 <div class="empty-state">
 
@@ -2998,13 +2985,13 @@ ${project?.name || "-"}
 </td>
 
                 <td>
-<span class="badge status-${t.status}">
-${t.status}
+<span class="badge status-${task.status}">
+${tasl.status}
 </span>
 </td>
 
 <td>
-${t.deadline || "-"}
+${task.deadline || "-"}
 </td>
 
 <td>
@@ -3024,12 +3011,12 @@ Restore
 
 
 <button
-class="btn btn-outline archive-btn"
-onclick="restoreTask(${task.id})">
+class="btn archive-btn archive-delete"
+onclick="deleteForever(${task.id})">
 
 <i class="fa-solid fa-trash"></i>
 
-Hapus
+Hapus Permanen
 
 </button>
 
