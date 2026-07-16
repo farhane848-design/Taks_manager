@@ -1351,9 +1351,11 @@ testSupabase();
         
 
         // On Load
-        document.addEventListener('DOMContentLoaded', () => {
-            await refreshAll();
-        });
+        document.addEventListener("DOMContentLoaded", async () => {
+
+    await refreshAll();
+
+});
 
        async function refreshAll(){
 
@@ -1379,19 +1381,7 @@ if (
 }
        }
 
-if(
 
-document.getElementById("archivePage")
-
-.style.display==="block"
-
-){
-
-await renderArchive();
-
-}
-
-}
 
         // --- UI Updates ---
         async function loadStats() {
@@ -3042,9 +3032,9 @@ await refreshAll();
 
 }
 
-function showAllTasks(event){
+async function showAllTasks(event){
 
-event.preventDefault();
+    event.preventDefault();
 
 activateMenu(event.currentTarget);
 
