@@ -1365,13 +1365,21 @@ await renderArchive();
         .select("*")
         .eq("archived", false);
 
-            if (errProject || errTask) {
-                console.error(errProject || errTask);
-                return;
-            }
-
+            if (errProject || errTask || errArchive) {
+    console.error(errProject || errTask || errArchive);
+    return;
+}
+const { data: archiveTasks, error: errArchive } =
+    await client
+        .from("tasks")
+        .select("*")
+        .eq("archived", true);
             const archiveTotal =
 document.getElementById("archiveTotalTask");
+
+            if (archiveTotal) {
+    archiveTotal.innerText = archiveTasks.length;
+}
 
 if(archiveTotal){
 
@@ -1380,23 +1388,19 @@ if(archiveTotal){
 archiveTasks.length;
 
 }
-            const uniqueProject=new Set();
+            const uniqueProject = new Set();
 
-archiveTasks.forEach(task=>{
-
-uniqueProject.add(task.project_id);
-
+archiveTasks.forEach(task => {
+    uniqueProject.add(task.project_id);
 });
+            
             
 
 const archiveProject =
-document.getElementById("archiveProjectCount");
+    document.getElementById("archiveProjectCount");
 
-if(archiveProject){
-
-    archiveProject.innerText =
-        uniqueProject.size;
-
+if (archiveProject) {
+    archiveProject.innerText = uniqueProject.size;
 }
 
             const today = new Date().toISOString().split("T")[0];
