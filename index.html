@@ -1010,6 +1010,44 @@ margin-top:12px;
 flex-wrap:wrap;
 
 }
+   .task-subtasks{
+
+margin-top:18px;
+
+padding-top:15px;
+
+border-top:1px solid #ECEFF5;
+
+}
+    .subtask-title{
+
+font-size:13px;
+
+font-weight:600;
+
+margin-bottom:10px;
+
+color:#64748B;
+
+}
+    
+    .subtask-item{
+
+display:flex;
+
+align-items:center;
+
+gap:8px;
+
+margin-bottom:8px;
+
+}.subtask-done{
+
+text-decoration:line-through;
+
+color:#94A3B8;
+
+}
     </style>
 </head>
 <body>
@@ -2337,65 +2375,89 @@ let html="";
 
 tasks.forEach(task=>{
 
-html+=`
+let subtasksHTML = "";
+
+if (task.subtasks && task.subtasks.length > 0) {
+
+    subtasksHTML = `
+        <div class="task-subtasks">
+
+            <div class="subtask-title">
+
+                <i class="fa-solid fa-list-check"></i>
+
+                Checklist
+
+            </div>
+
+            ${task.subtasks.map(sub => `
+
+                <div class="subtask-item">
+
+                    <input
+                        type="checkbox"
+                        disabled
+                        ${sub.done ? "checked" : ""}>
+
+                    <span class="${sub.done ? "subtask-done" : ""}">
+
+                        ${sub.title}
+
+                    </span>
+
+                </div>
+
+            `).join("")}
+
+        </div>
+    `;
+
+}
+   html += `
 
 <div class="task-card">
 
-<h3>
+    <h3>${task.title}</h3>
 
-${task.title}
+    <p>
 
-</h3>
+        ${task.description || "-"}
 
-<p>
+    </p>
 
-${task.description || "-"}
+    ${subtasksHTML}
 
-</p>
+    <div class="task-meta">
 
-<div class="task-meta">
+        <span>
 
-<span class="badge">
+            <i class="fa-regular fa-calendar"></i>
 
-<i class="fa-regular fa-calendar"></i>
+            ${task.deadline}
 
-${new Date(task.deadline).toLocaleDateString(
-    "id-ID",
-    {
-        day:"2-digit",
-        month:"short",
-        year:"numeric"
-    }
-)}
+        </span>
 
-</span>
+        <span class="badge status-${task.status}">
 
-<span class="badge status-${task.status}">
+            ${task.status}
 
-${
-task.status==="todo"
-?"Todo"
-:task.status==="progress"
-?"Progress"
-:"Done"
-}
+        </span>
 
-</span>
+        ${
+            task.attachment
+            ?
+            `<span class="badge">
 
-${task.attachment
-?`
-<span class="badge">
+                📎 Lampiran
 
-📎 Lampiran
+            </span>`
+            :
+            ""
+        }
 
-</span>
-`
-:""}
+    </div>
 
 </div>
-
-</div>
-
 
 `;
 
