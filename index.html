@@ -1671,9 +1671,6 @@ if (archiveProject) {
 
 }
 
-`;
-
-return;
             }
 
             const select =
@@ -2127,7 +2124,17 @@ ${done}/${total} Task selesai
 
 <i class="fa-regular fa-calendar"></i>
 
-${nearest ? nearest.deadline : "-"}
+${nearest
+? new Date(nearest.deadline).toLocaleDateString(
+    "id-ID",
+    {
+        day:"2-digit",
+        month:"short",
+        year:"numeric"
+    }
+)
+: "-"
+}
 
 </div>
 
@@ -2135,7 +2142,8 @@ ${nearest ? nearest.deadline : "-"}
 
 <div class="project-action-group">
 
-<button class="btn-edit">
+<button
+class="btn-edit"
 onclick='event.stopPropagation();editProject(${JSON.stringify(p)})'>
 
 <i class="fa-solid fa-pen"></i>
@@ -2144,7 +2152,8 @@ Edit
 
 </button>
 
-<button class="btn-delete">
+<button
+class="btn-delete"
 onclick="event.stopPropagation();confirmDelete(${p.id},'project')">
 
 
@@ -2360,11 +2369,17 @@ ${new Date(task.deadline).toLocaleDateString(
 
 </span>
 
-${task.status==="todo"
+<span class="badge status-${task.status}">
+
+${
+task.status==="todo"
 ?"Todo"
 :task.status==="progress"
 ?"Progress"
-:"Done"}
+:"Done"
+}
+
+</span>
 
 ${task.attachment
 ?`
@@ -2380,7 +2395,6 @@ ${task.attachment
 
 </div>
 
-</div>
 
 `;
 
@@ -3266,7 +3280,7 @@ dengan pencarian.
         "success"
     );
 
-    await renderArchive();
+    await refreshAll();
 
 
 }
