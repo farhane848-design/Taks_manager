@@ -741,7 +741,49 @@ Done
     </div>
 
 </div>
+<!-- ARCHIVE PAGE -->
+<div id="archivePage" style="display:none;">
 
+    <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        margin-bottom:20px;">
+
+        <h2>Arsip Task</h2>
+
+    </div>
+
+    <section class="table-container">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Task</th>
+
+                    <th>Project</th>
+
+                    <th>Tanggal Arsip</th>
+
+                    <th width="180">Aksi</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="archiveTableBody">
+
+            </tbody>
+
+        </table>
+
+    </section>
+
+</div>
+        
 </div>
     </main>
 
@@ -2105,6 +2147,150 @@ document
             }
 
         }
+async function renderArchive(){
+
+    const { data: tasks, error } = await client
+        .from("tasks")
+        .select("*")
+        .eq("archived", true);
+
+    if(error){
+        console.error(error);
+        return;
+    }
+
+    const { data: projects } = await client
+        .from("projects")
+        .select("*");
+
+    let html = "";
+
+    if(tasks.length===0){
+
+        html = `
+        <tr>
+
+            <td colspan="4">
+
+                <div class="empty-state">
+
+                    <i class="fa-solid fa-box-open"></i>
+
+                    <p>Belum ada task yang diarsipkan.</p>
+
+                </div>
+
+            </td>
+
+        </tr>`;
+
+    }else{
+
+        tasks.forEach(task=>{
+
+            const project =
+                projects.find(p=>p.id==task.project_id);
+
+            html += `
+
+            <tr>
+
+                <td>${task.title}</td>
+
+                <td>${project ? project.name : "-"}</td>
+
+                <td>${task.archived_at ?? "-"}</td>
+
+                <td>
+
+                    <button
+                        class="btn btn-outline"
+                        onclick="restoreTask(${task.id})">
+
+                        Restore
+
+                    </button>
+
+                    <button
+                        class="btn"
+                        style="background:#EF4444;color:white;"
+                        onclick="deleteForever(${task.id})">
+
+                        Hapus
+
+                    </button>
+
+                </td>
+
+            </tr>
+
+            `;
+
+        });
+
+    }
+
+    document.getElementById("archiveTableBody").innerHTML = html;
+
+}
+        async function restoreTask(id){
+
+    const { error } = await client
+        .from("tasks")
+        .update({
+
+            archived:false,
+
+            archived_at:null
+
+        })
+        .eq("id",id);
+
+    if(error){
+
+        console.error(error);
+
+        return showToast(error.message,"danger");
+
+    }
+
+    showToast(
+        "Task berhasil dipulihkan",
+        "success"
+    );
+
+    renderArchive();
+
+    refreshAll();
+
+}
+        async function deleteForever(id){
+
+    if(!confirm("Hapus permanen task ini?"))
+        return;
+
+    const { error } = await client
+        .from("tasks")
+        .delete()
+        .eq("id",id);
+
+    if(error){
+
+        console.error(error);
+
+        return showToast(error.message,"danger");
+
+    }
+
+    showToast(
+        "Task dihapus permanen",
+        "success"
+    );
+
+    renderArchive();
+
+}
+        
         function activateMenu(el){
 
     document
@@ -2168,19 +2354,33 @@ await renderProjects();
 
 }
 
-function showArchive(event){
+async function showArchive(event){
 
     event.preventDefault();
 
     activateMenu(event.currentTarget);
 
-    document.querySelector(".greeting h1").innerText="Arsip Task";
+    document.getElementById("taskPage").style.display="none";
 
-    showToast(
-"Fitur Arsip Task sedang dikembangkan",
-"warning"
-);
-    }
+    document.getElementById("projectPage").style.display="none";
+
+    document.getElementById("projectDetailPage").style.display="none";
+
+    document.getElementById("archivePage").style.display="block";
+
+    document.querySelector(".toolbar").style.display="none";
+
+    document.querySelector(".stats-grid").style.display="none";
+
+    document.querySelector(".greeting h1").innerText =
+        "Arsip Task";
+
+    document.querySelector(".greeting p").innerText =
+        "Task yang telah diarsipkan masih dapat dipulihkan.";
+
+    await renderArchive();
+
+}
     </script>
 
 
