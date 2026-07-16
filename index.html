@@ -1819,24 +1819,30 @@ if (t.status === "todo") {
                         </td>
                         <td>
 
-<span class="badge status-${task.status}">
+                        <span class="badge status-${task.status}">
+                        
+                        ${task.status==="todo"
+                        ?"Todo"
+                        :task.status==="progress"
+                        ?"Progress"
+                        :"Done"}
+                        
+                        </span>
+                        
+                        </td>
+                        
+                        <td>
+                        
+                        <i class="fa-regular fa-calendar"></i>
+                        
+                        ${task.deadline || "-"}
+                        
+                        </td>
+                        <td>
 
-${task.status==="todo"
-?"Todo"
-:task.status==="progress"
-?"Progress"
-:"Done"}
-
-</span>
-
-</td>
-<td>
-
-<i class="fa-regular fa-calendar"></i>
-
-${task.deadline || "-"}
-
-</td>
+                        ${archivedDate}
+                        
+                        </td>
 
                         <td>${deadlineBadge}</td>
                         <td>${statusHtml}</td>
@@ -2027,6 +2033,10 @@ ${nearest
 :"-"}
 
 </div>
+
+<button
+class="btn-edit"
+onclick='event.stopPropagation();editProject(${JSON.stringify(p)})'>
 
 <i class="fa-solid fa-pen"></i>
 
@@ -2229,7 +2239,7 @@ ${task.description || "-"}
 
 <div>
 
-📅 ${task.deadline}
+📅 ${t.deadline}
 
 </div>
 
@@ -2407,12 +2417,12 @@ async function uploadAttachment(file){
             document.getElementById('taskId').value = task.id;
             document.getElementById('taskProject').value = task.project_id;
             document.getElementById('taskTitle').value = task.title;
-            document.getElementById('taskDeadline').value = task.deadline;
+            document.getElementById('taskDeadline').value = t.deadline;
             document.getElementById('taskDesc').value = task.description;
             document
 .getElementById("taskStatus")
 .value=
-task.status;
+t.status;
             
             if(task.attachment){
 
@@ -2987,12 +2997,24 @@ ${project?.name || "-"}
 
 </td>
 
-                <td>${archivedDate}</td>
+                <td>
+<span class="badge status-${t.status}">
+${t.status}
+</span>
+</td>
+
+<td>
+${t.deadline || "-"}
+</td>
+
+<td>
+${archivedDate}
+</td>
 
 <td class="archive-action">
 <button
-class="btn archive-btn archive-delete"
-onclick="deleteForever(${task.id})">
+class="btn btn-outline archive-btn"
+onclick="restoreTask(${task.id})">
 
 <i class="fa-solid fa-rotate-left"></i>
 
@@ -3002,8 +3024,8 @@ Restore
 
 
 <button
-class="btn archive-btn archive-delete"
-onclick="deleteForever(${task.id})">
+class="btn btn-outline archive-btn"
+onclick="restoreTask(${task.id})">
 
 <i class="fa-solid fa-trash"></i>
 
@@ -3027,7 +3049,7 @@ html=`
 
 <tr>
 
-<td colspan="4">
+<td colspan="6">
 
 <div class="empty-state">
 
@@ -3148,7 +3170,7 @@ document.querySelector(".stats-grid").style.display="grid";
 document.querySelector(".greeting h1").innerText =
 "Semua Task";
 
-refreshAll();
+await refreshAll();
 
 }
 
