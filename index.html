@@ -887,10 +887,33 @@
                 return (matchSearch && matchProj && matchStat && allowedProjectIds.includes(Number(t.project_id)));
             });
 
+            const statusOrder = {
+                progress: 1,
+                todo: 2,
+                done: 3
+            };
+            
             filteredTasks.sort((a, b) => {
-                if (sortBy === 'deadline_asc') return new Date(a.deadline) - new Date(b.deadline);
-                if (sortBy === 'deadline_description') return new Date(b.deadline) - new Date(a.deadline);
-                if (sortBy === 'newest') return b.id - a.id;
+            
+                // Prioritas status
+                if (statusOrder[a.status] !== statusOrder[b.status]) {
+                    return statusOrder[a.status] - statusOrder[b.status];
+                }
+            
+                // Kalau status sama baru urut deadline
+                if (sortBy === "deadline_asc") {
+                    return new Date(a.deadline) - new Date(b.deadline);
+                }
+            
+                if (sortBy === "deadline_description") {
+                    return new Date(b.deadline) - new Date(a.deadline);
+                }
+            
+                if (sortBy === "newest") {
+                    return b.id - a.id;
+                }
+            
+                return 0;
             });
 
             if (filteredTasks.length === 0) {
