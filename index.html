@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskFlow | Task Manager by ersandyf_</title>
+    <title>GAWEDEUI — Kerja atau dikerjain?</title>
     
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/farhane848-design/Taks_manager/cb3a5fefbf4ccbfe4bb84a4247466b6b33b1e903/Untitled%20design.png">
     
@@ -16,6 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <!-- Tailwind CSS -->
+    <script src="./tailwind.config.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Lucide Icons -->
@@ -27,129 +28,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     
-    <!-- Konfigurasi Tailwind -->
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: { 
-                        brand: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb' },
-                        primary: '#2563EB',
-                        success: '#22C55E',
-                        warning: '#F59E0B',
-                        danger: '#EF4444',
-                        surface: '#FFFFFF',
-                        border: '#e5e7eb',
-                    }
-                }
-            }
-        }
-    </script>
     
-    <style>
-        /* === MINIMAL CSS === */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #d1d5db; }
-        
-        .badge { padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
-        .badge-project { background: #F5F7FB; border: 1px solid #e5e7eb; }
-        .badge.warning { background: #fef3c7; color: #f59e0b; }
-        .badge.danger { background: #fee2e2; color: #ef4444; }
-        .badge.success { background: #dcfce7; color: #22c55e; }
-        .status-toggle { cursor: pointer; transition: 0.3s; }
-        .status-toggle:hover { opacity: 0.8; }
-
-        /* Modals */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: 0.3s; }
-        .modal-overlay.active { opacity: 1; pointer-events: all; }
-        .modal { background: #ffffff; width: 500px; max-width: 90%; border-radius: 18px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); transform: translateY(20px); transition: 0.3s; max-height: 90vh; display: flex; flex-direction: column; }
-        .modal-overlay.active .modal { transform: translateY(0); }
-        .modal-header { padding: 20px 24px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
-        .modal-header h2 { font-size: 18px; font-weight: 600; color: #1f2937; }
-        .close-modal { font-size: 20px; color: #6b7280; cursor: pointer; border:none; background:none; }
-        .modal-body { padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
-        .form-group { display: flex; flex-direction: column; gap: 8px; }
-        .form-group label { font-size: 13px; font-weight: 600; color: #1f2937; }
-        .form-control { padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; background: #F5F7FB; outline:none; transition: all 0.3s ease; }
-        .form-control:focus { border-color: #2563eb; background: #ffffff; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-        .color-picker { display: flex; gap: 10px; flex-wrap: wrap; }
-        .color-btn { width: 30px; height: 30px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
-        .color-btn.active { border-color: #1f2937; transform: scale(1.1); }
-        .modal-footer { padding: 20px 24px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 12px; }
-        
-        /* === TOMBOL === */
-        .btn { padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: all 0.3s ease; }
-        .btn-outline { background: #ffffff; color: #475569; border: 1px solid #e5e7eb; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .btn-outline:hover { background: #f8fafc; border-color: #cbd5e1; }
-        .btn-primary { background: transparent; color: #2563eb; border: 1px solid transparent; }
-        .btn-primary:hover { background: #2563eb; color: white; border-color: #2563eb; box-shadow: 0 6px 15px rgba(37,99,235,0.25); transform: translateY(-2px); }
-
-        /* Toast */
-        .toast-container { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 1100; }
-        .toast { background: #ffffff; color: #1f2937; padding: 16px 20px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 12px; min-width: 300px; transform: translateX(120%); transition: 0.3s; border-left: 4px solid #2563eb; }
-        .toast.show { transform: translateX(0); }
-        .toast.success { border-color: #22c55e; }
-        .toast.danger { border-color: #ef4444; }
-        
-        /* Spinner & Misc */
-        .spinner { border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 2px solid white; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; }
-        .spinner-dark { border-color: rgba(37,99,235,0.2); border-top-color: #2563eb; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .custom-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: #2563eb; }
-        .checklist-item { display: flex; align-items: center; gap: 10px; }
-        .checklist-item input[type="text"] { flex: 1; border: none; background: transparent; font-size: 14px; border-bottom: 1px solid #e5e7eb; padding: 4px 0; outline:none;}
-        .checklist-item input[type="text"]:focus { border-bottom-color: #2563eb; }
-
-        /* Drag & Drop Kanban */
-        .kanban-card { cursor: grab; }
-        .kanban-card:active { cursor: grabbing; }
-        .kanban-card.dragging { opacity: 0.5; transform: scale(0.98); }
-        .kanban-dropzone.drag-over { background: rgba(37,99,235,0.05); border: 2px dashed #2563eb; border-radius: 12px; }
-
-        /* Tema dan panel fitur tambahan */
-        .dark body { background:#0f172a; color:#e2e8f0; }
-        .dark .bg-white, .dark .modal { background:#1e293b !important; }
-        .dark .bg-slate-50, .dark .bg-\[\#F8FAFC\] { background:#0f172a !important; }
-        .dark .bg-slate-100 { background:#334155 !important; }
-        .dark .text-slate-900, .dark .text-slate-800, .dark .text-slate-700 { color:#f1f5f9 !important; }
-        .dark .text-slate-600, .dark .text-slate-500 { color:#cbd5e1 !important; }
-        .dark .border-slate-200, .dark .border-slate-100, .dark .border { border-color:#334155 !important; }
-        .dark .form-control { background:#0f172a; color:#f1f5f9; border-color:#475569; }
-        .dark input, .dark select, .dark textarea { color:#f1f5f9 !important; }
-        .dark select:not(.form-control), .dark #taskToolbar select, .dark #archiveSearch, .dark #searchInput { background:#1e293b !important; border-color:#475569 !important; color:#f8fafc !important; }
-        .dark #taskToolbar, .dark #archivePage .bg-white, .dark #projectPage .bg-white { background:#1e293b !important; }
-        .dark #projectList h4, .dark #archiveTableBody .font-semibold, .dark #notesList h3, .dark #documentsList .font-semibold { color:#f8fafc !important; }
-        .dark .badge-project { background:#334155; border-color:#475569; color:#f8fafc; }
-        .dark #taskTableBody td, .dark #taskTableBody .text-slate-900, .dark #taskTableBody .text-slate-600 { color:#e2e8f0 !important; }
-        .dark .btn-outline { background:#334155; color:#f8fafc; border-color:#475569; }
-        .dark #projectList button, .dark #taskToolbar button { color:#f8fafc; }
-        .resource-action { width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center; border-radius:8px; transition:.2s; }
-        .resource-action.edit { background:#eff6ff; color:#2563eb; } .resource-action.edit:hover { background:#2563eb; color:#fff; }
-        .resource-action.delete { background:#fef2f2; color:#dc2626; } .resource-action.delete:hover { background:#dc2626; color:#fff; }
-        .dark .resource-action.edit { background:#1e3a5f; color:#93c5fd; } .dark .resource-action.delete { background:#4c1d1d; color:#fca5a5; }
-        .note-card { background:linear-gradient(145deg,#fffbeb,#fff7d6); border:1px solid #fde68a; box-shadow:0 8px 20px rgba(146,64,14,.08); }
-        .dark .note-card { background:linear-gradient(145deg,#3b2c12,#2a2115); border-color:#705216; }
-        .btn-create { background:#2563eb !important; color:#fff !important; border-color:#2563eb !important; box-shadow:0 8px 18px rgba(37,99,235,.2); }
-        .btn-create:hover { background:#1d4ed8 !important; transform:translateY(-1px); }
-        .notif-dropdown { display:none; position:absolute; right:0; top:calc(100% + 10px); width:320px; max-height:380px; overflow:auto; z-index:60; }
-        .notif-dropdown.open { display:block; }
-        @media (max-width:768px){
-
-        #sidebar{
-            transform:translateX(-100%);
-            transition:.3s;
-        }
-        
-        #sidebar.show{
-            transform:translateX(0);
-        }
-        
-        }
-    </style>
+    
+    <link rel="stylesheet" href="./styles.css">
 </head>
 <body class="bg-[#F8FAFC] text-slate-800 font-sans h-screen flex overflow-hidden selection:bg-brand-100 selection:text-brand-600">
 
@@ -163,10 +44,10 @@
     class="fixed md:relative left-0 top-0 h-screen w-64 bg-white border-r border-slate-200 flex flex-col z-50 shadow-[2px_0_8px_-4px_rgba(0,0,0,0.05)]">
         <div class="h-20 flex items-center px-6 border-b border-slate-100">
             <div class="flex items-center gap-3">
-                <img src="https://raw.githubusercontent.com/farhane848-design/Taks_manager/cb3a5fefbf4ccbfe4bb84a4247466b6b33b1e903/Untitled%20design.png" class="w-8 h-8 object-contain" alt="Logo">
+                <span class="neo-logo w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-700 text-white shadow-md flex items-center justify-center font-black text-lg" aria-hidden="true">G</span>
                 <div>
-                    <h1 class="font-bold text-lg leading-tight text-slate-900 tracking-tight">TaskFlow</h1>
-                    <p class="text-[10px] text-brand-600 font-medium tracking-wide uppercase">by ersandyf_</p>
+                    <h1 class="font-bold text-lg leading-tight text-slate-900 tracking-tight">GAWEDEUI</h1>
+                    <p class="text-[10px] text-brand-600 font-semibold tracking-wide uppercase">Kerja atau dikerjain?</p>
                 </div>
             </div>
         </div>
@@ -235,12 +116,13 @@
             </div>
 
             <!-- Actions -->
-            <div class="flex items-center gap-6 w-full sm:w-auto justify-end">
+            <div id="topbarActions" class="flex items-center gap-6 w-full sm:w-auto justify-end">
                 <div class="relative w-full max-w-md sm:w-80 group">
                     <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 group-focus-within:text-brand-500 transition-colors"></i>
                     <input type="text" id="searchInput" placeholder="Cari task, project, atau catatan..." onkeyup="handleSearch()"
                         class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:bg-white transition-all placeholder:text-slate-400">
                 </div>
+                <div class="clock-widget" aria-label="Waktu saat ini di WIB"><i data-lucide="clock-3" aria-hidden="true"></i><div class="clock-copy"><time class="clock-date" id="currentDate">Memuat tanggal…</time><time class="clock-time" id="currentTime">--:--:--</time></div><span class="clock-zone">WIB</span></div>
                 <div class="relative">
                     <button onclick="toggleNotifications(event)" class="relative p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:text-brand-600" aria-label="Notifikasi"><i data-lucide="bell" class="w-5 h-5"></i><span id="notificationBadge" class="hidden absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] leading-4"></span></button>
                     <div id="notificationDropdown" class="notif-dropdown bg-white border border-slate-200 rounded-xl shadow-xl"><div class="p-4 border-b border-slate-100 flex justify-between"><b>Notifikasi</b><span id="notificationCount" class="text-xs text-slate-500">0</span></div><div id="notificationList" class="divide-y divide-slate-100"></div></div>
@@ -388,24 +270,24 @@
                 </div>
 
                 <!-- ==== HALAMAN 1.5: KANBAN BOARD ==== -->
-                <div id="kanbanPage" style="display:none;" class="h-[calc(100vh-140px)] flex flex-col">
+                <div id="kanbanPage" style="display:none;" class="kanban-page h-[calc(100vh-140px)] flex flex-col">
                     <!-- Toolbar Kanban -->
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center mb-6 shrink-0 dark:bg-slate-800 dark:border-slate-700">
-                        <div class="flex items-center gap-3">
+                    <div class="kanban-toolbar bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center mb-6 shrink-0 dark:bg-slate-800 dark:border-slate-700">
+                        <div class="kanban-board-meta"><span id="kanbanBoardDate">TODAY'S BOARD</span><strong>Board <i>·</i> Daily Tasks</strong><small>Tarik kartu untuk memperbarui status</small></div>
+                        <div class="kanban-toolbar-actions">
                             <select class="border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-brand-500 min-w-[200px] dark:bg-slate-900 dark:border-slate-600 dark:text-slate-200" id="kanbanFilterProject" onchange="renderKanban()">
                                 <option value="">Semua Project</option>
                             </select>
-                            <span class="text-sm text-slate-500 dark:text-slate-400">Tarik dan lepas (Drag & Drop) untuk ubah status</span>
+                            <button class="btn btn-primary" onclick="openTaskModal()"><i data-lucide="plus" class="w-4 h-4"></i> Tambah Task</button>
                         </div>
-                        <button class="btn btn-primary" onclick="openTaskModal()"><i data-lucide="plus" class="w-4 h-4"></i> Tambah Task</button>
                     </div>
                     
                     <!-- Papan / Board -->
-                    <div class="flex-1 overflow-x-auto overflow-y-hidden pb-4">
-                        <div class="flex gap-6 h-full min-w-[900px] pb-2">
+                    <div class="kanban-scroll flex-1 overflow-x-auto overflow-y-hidden pb-4">
+                        <div class="kanban-board flex gap-6 h-full pb-2">
                             
                             <!-- Kolom TODO -->
-                            <div class="flex-1 flex flex-col bg-slate-50/80 rounded-2xl border border-slate-200 dark:bg-[#1e293b] dark:border-slate-700">
+                            <div class="kanban-column column-todo flex-1 flex flex-col bg-slate-50/80 rounded-2xl border border-slate-200 dark:bg-[#1e293b] dark:border-slate-700">
                                 <div class="p-4 border-b border-slate-200/60 flex justify-between items-center dark:border-slate-700">
                                     <h3 class="font-bold text-slate-700 flex items-center gap-2 dark:text-slate-200"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Todo</h3>
                                     <span class="bg-slate-200 text-slate-600 text-xs font-bold px-2.5 py-0.5 rounded-full dark:bg-slate-700 dark:text-slate-300" id="kanbanCountTodo">0</span>
@@ -421,7 +303,7 @@
                             </div>
                             
                             <!-- Kolom IN PROGRESS -->
-                            <div class="flex-1 flex flex-col bg-slate-50/80 rounded-2xl border border-slate-200 dark:bg-[#1e293b] dark:border-slate-700">
+                            <div class="kanban-column column-progress flex-1 flex flex-col bg-slate-50/80 rounded-2xl border border-slate-200 dark:bg-[#1e293b] dark:border-slate-700">
                                 <div class="p-4 border-b border-slate-200/60 flex justify-between items-center dark:border-slate-700">
                                     <h3 class="font-bold text-slate-700 flex items-center gap-2 dark:text-slate-200"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> In Progress</h3>
                                     <span class="bg-slate-200 text-slate-600 text-xs font-bold px-2.5 py-0.5 rounded-full dark:bg-slate-700 dark:text-slate-300" id="kanbanCountProgress">0</span>
@@ -436,7 +318,7 @@
                             </div>
 
                             <!-- Kolom DONE -->
-                            <div class="flex-1 flex flex-col bg-slate-50/80 rounded-2xl border border-slate-200 dark:bg-[#1e293b] dark:border-slate-700">
+                            <div class="kanban-column column-done flex-1 flex flex-col bg-slate-50/80 rounded-2xl border border-slate-200 dark:bg-[#1e293b] dark:border-slate-700">
                                 <div class="p-4 border-b border-slate-200/60 flex justify-between items-center dark:border-slate-700">
                                     <h3 class="font-bold text-slate-700 flex items-center gap-2 dark:text-slate-200"><span class="w-2.5 h-2.5 rounded-full bg-green-500"></span> Done</h3>
                                     <span class="bg-slate-200 text-slate-600 text-xs font-bold px-2.5 py-0.5 rounded-full dark:bg-slate-700 dark:text-slate-300" id="kanbanCountDone">0</span>
@@ -650,7 +532,7 @@
     <div class="modal-overlay" id="documentModal"><div class="modal"><div class="modal-header"><h2 id="documentModalTitle">Tambah Dokumen</h2><button class="close-modal" onclick="closeModal('documentModal')"><i data-lucide="x" class="w-5 h-5"></i></button></div><div class="modal-body"><input type="hidden" id="documentId"><input type="hidden" id="documentExistingUrl"><div class="form-group"><label>Project *</label><select id="documentProject" class="form-control"></select></div><div class="form-group"><label>Nama dokumen *</label><input id="documentName" class="form-control" placeholder="Contoh: Brief desain"></div><div class="form-group"><label>Deskripsi</label><textarea id="documentDescription" class="form-control" rows="3"></textarea></div><div class="form-group"><label>Upload file (opsional)</label><input id="documentFile" type="file" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.zip"><p class="text-xs text-slate-500">Maks. 10 MB. File disimpan ke Supabase Storage.</p></div><div class="form-group"><label>Tautan file (opsional)</label><input id="documentUrl" class="form-control" placeholder="https://..."></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('documentModal')">Batal</button><button class="btn btn-primary" onclick="saveDocument()">Simpan</button></div></div></div>
 
     <!-- MODAL: CATATAN -->
-    <div class="modal-overlay" id="noteModal"><div class="modal"><div class="modal-header"><h2 id="noteModalTitle">Tambah Catatan</h2><button class="close-modal" onclick="closeModal('noteModal')"><i data-lucide="x" class="w-5 h-5"></i></button></div><div class="modal-body"><input type="hidden" id="noteId"><div class="form-group"><label>Project *</label><select id="noteProject" class="form-control"></select></div><div class="form-group"><label>Judul *</label><input id="noteTitle" class="form-control" placeholder="Judul catatan"></div><div class="form-group"><label>Isi catatan *</label><textarea id="noteContent" class="form-control" rows="7"></textarea></div><div class="form-group"><label>Tautan terkait (opsional)</label><input id="noteUrl" class="form-control" placeholder="https://..."></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('noteModal')">Batal</button><button class="btn btn-primary" onclick="saveNote()">Simpan</button></div></div></div>
+    <div class="modal-overlay" id="noteModal"><div class="modal"><div class="modal-header"><h2 id="noteModalTitle">Tambah Catatan</h2><button class="close-modal" onclick="closeModal('noteModal')"><i data-lucide="x" class="w-5 h-5"></i></button></div><div class="modal-body"><input type="hidden" id="noteId"><div class="form-group"><label>Project *</label><select id="noteProject" class="form-control"></select></div><div class="form-group"><label>Judul *</label><input id="noteTitle" class="form-control" placeholder="Judul catatan"></div><div class="form-group"><label>Isi catatan *</label><div class="note-editor-toolbar" role="toolbar" aria-label="Format catatan"><button type="button" class="note-tool" title="Undo" onmousedown="noteKeepSelection(event)" onclick="noteCommand('undo')">↶</button><button type="button" class="note-tool" title="Redo" onmousedown="noteKeepSelection(event)" onclick="noteCommand('redo')">↷</button><span class="note-tool-separator"></span><span class="note-tool"><select aria-label="Gaya teks" onmousedown="noteKeepSelection(event)" onchange="noteFormatBlock(this.value)"><option value="p">Paragraf</option><option value="h1">Judul 1</option><option value="h2">Judul 2</option><option value="h3">Judul 3</option><option value="blockquote">Kutipan</option></select></span><span class="note-tool"><select aria-label="Ukuran teks" onmousedown="noteKeepSelection(event)" onchange="noteFontSize(this.value)"><option value="3">Normal</option><option value="2">Kecil</option><option value="4">Besar</option><option value="5">Sangat besar</option><option value="6">Judul</option></select></span><span class="note-tool-separator"></span><button type="button" class="note-tool" title="Tebal" onmousedown="noteKeepSelection(event)" onclick="noteCommand('bold')"><b>B</b></button><button type="button" class="note-tool" title="Miring" onmousedown="noteKeepSelection(event)" onclick="noteCommand('italic')"><i>I</i></button><button type="button" class="note-tool" title="Garis bawah" onmousedown="noteKeepSelection(event)" onclick="noteCommand('underline')"><u>U</u></button><button type="button" class="note-tool" title="Coret" onmousedown="noteKeepSelection(event)" onclick="noteCommand('strikeThrough')"><s>S</s></button><span class="note-tool-separator"></span><button type="button" class="note-tool" title="Bullet" onmousedown="noteKeepSelection(event)" onclick="noteCommand('insertUnorderedList')">• List</button><button type="button" class="note-tool" title="Penomoran" onmousedown="noteKeepSelection(event)" onclick="noteCommand('insertOrderedList')">1. List</button><button type="button" class="note-tool" title="Rata kiri" onmousedown="noteKeepSelection(event)" onclick="noteCommand('justifyLeft')">≡</button><button type="button" class="note-tool" title="Rata tengah" onmousedown="noteKeepSelection(event)" onclick="noteCommand('justifyCenter')">☰</button><button type="button" class="note-tool" title="Rata kanan" onmousedown="noteKeepSelection(event)" onclick="noteCommand('justifyRight')">≣</button><span class="note-tool-separator"></span><label class="note-tool" title="Warna teks">A <input type="color" value="#2563eb" aria-label="Warna teks" onmousedown="noteKeepSelection(event)" onchange="noteColor('foreColor',this.value)" style="width:22px;height:22px;border:0;padding:0;background:transparent"></label><label class="note-tool" title="Warna sorot">▰ <input type="color" value="#fff0a8" aria-label="Warna sorot" onmousedown="noteKeepSelection(event)" onchange="noteColor('hiliteColor',this.value)" style="width:22px;height:22px;border:0;padding:0;background:transparent"></label><button type="button" class="note-tool" title="Tambah tautan" onmousedown="noteKeepSelection(event)" onclick="noteInsertLink()">↗ Link</button><button type="button" class="note-tool" title="Tambah tabel" onmousedown="noteKeepSelection(event)" onclick="noteInsertTable()">▦ Tabel</button><button type="button" class="note-tool" title="Garis pemisah" onmousedown="noteKeepSelection(event)" onclick="noteCommand('insertHorizontalRule')">―</button><button type="button" class="note-tool" title="Hapus format" onmousedown="noteKeepSelection(event)" onclick="noteCommand('removeFormat')">Tx</button></div><div id="noteContent" class="note-editor-content" contenteditable="true" spellcheck="true" aria-label="Isi catatan"></div></div><div class="form-group"><label>Tautan terkait (opsional)</label><input id="noteUrl" class="form-control" placeholder="https://..."></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('noteModal')">Batal</button><button class="btn btn-primary" onclick="saveNote()">Simpan Catatan</button></div></div></div>
 
     <!-- MODAL: DELETE CONFIRM -->
     <div class="modal-overlay" id="deleteModal">
@@ -671,578 +553,6 @@
     </div>
 
     <!-- JAVASCRIPT & SUPABASE LOGIC -->
-    <script>
-        const SUPABASE_URL = "https://dbakpnpzslvvdgxychcg.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_V1BJXeUpyEaRqcWAIp9Kbg_vP2f1iDH";
-        const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        
-        let currentProjectId = null;
-        let searchTimeout = null;
-        let existingAttachments = []; 
-        let dashboardChartInstance = null; 
-        let documentsData = [];
-        let notesData = [];
-        let projectCache = [];
-        let tasksCache = []; // Untuk Kanban dan caching lokal agar drag drop smooth
-
-        function initTheme() {
-            const theme = localStorage.getItem('taskflow-theme');
-            document.documentElement.classList.toggle('dark', theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches));
-        }
-        function toggleTheme() {
-            document.documentElement.classList.toggle('dark');
-            localStorage.setItem('taskflow-theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-            if (dashboardChartInstance) loadStats();
-        }
-
-        document.addEventListener("DOMContentLoaded", async () => {
-            initTheme();
-            lucide.createIcons();
-            await refreshAll();
-        });
-
-        async function refreshAll() {
-            // Fetch global data tasks sekali untuk dipakai tabel dan kanban
-            const { data: tasks } = await client.from("tasks").select("*").eq("archived", false);
-            if (tasks) tasksCache = tasks;
-
-            await Promise.all([
-                loadStats(),
-                loadProjectDropdown(),
-                renderTable(),
-                loadResources()
-            ]);
-            renderDocuments(); renderNotes(); renderNotifications();
-
-            if (document.getElementById("projectPage").style.display === "block") await renderProjects();
-            if (document.getElementById("kanbanPage").style.display === "block") await renderKanban();
-            if (document.getElementById("archivePage").style.display === "block") await renderArchive();
-            if (currentProjectId && document.getElementById("projectDetailPage").style.display === "block") await openProject(currentProjectId);
-        }
-
-        async function loadStats() {
-            const { data: projects } = await client.from("projects").select("*").eq("archived", false);
-            const { data: tasks } = await client.from("tasks").select("*").eq("archived", false);
-            const { data: archiveTasks } = await client.from("tasks").select("*").eq("archived", true);
-
-            if (projects && tasks && archiveTasks) {
-                // Update Arsip Stats
-                document.getElementById("archiveTotalTask").innerText = archiveTasks.length;
-                const uniqueProject = new Set(archiveTasks.map(task => task.project_id));
-                document.getElementById("archiveProjectCount").innerText = uniqueProject.size;
-
-                const today = new Date().toISOString().split("T")[0];
-                
-                // Kalkulasi Stats Utama
-                const countPending = tasks.filter(t => t.status !== "done").length;
-                const countDone = tasks.filter(t => t.status === "done").length;
-                const countTodo = tasks.filter(t => t.status === "todo").length;
-                const countProgress = tasks.filter(t => t.status === "progress").length;
-                
-                const overdueTasks = tasks.filter(t => t.status !== "done" && t.deadline < today)
-                                         .sort((a,b) => new Date(a.deadline) - new Date(b.deadline));
-                const countOverdue = overdueTasks.length;
-                const dateInThreeDays = new Date(); dateInThreeDays.setDate(dateInThreeDays.getDate() + 3);
-                const threeDays = dateInThreeDays.toISOString().split('T')[0];
-                const dateTomorrow = new Date(); dateTomorrow.setDate(dateTomorrow.getDate() + 1);
-                const tomorrow = dateTomorrow.toISOString().split('T')[0];
-                const todayTasks = tasks.filter(t => t.status !== 'done' && t.deadline === today);
-                const nearTasks = tasks.filter(t => t.status !== 'done' && t.deadline > tomorrow && t.deadline <= threeDays)
-                    .sort((a,b) => new Date(a.deadline) - new Date(b.deadline));
-
-                document.getElementById("statTotalProject").innerText = projects.length;
-                document.getElementById("statTotalTask").innerText = tasks.length;
-                document.getElementById("statPending").innerText = countPending;
-                document.getElementById("statDone").innerText = countDone;
-
-                updateDashboardChart(countTodo, countProgress, countDone);
-
-                document.getElementById("statOverdueBadge").innerText = `${countOverdue} Task`;
-                const overdueContainer = document.getElementById("dashboardOverdueList");
-                
-                if(countOverdue === 0) {
-                    overdueContainer.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-slate-500 py-10"><i data-lucide="smile" class="w-10 h-10 mb-3 text-slate-300"></i><p>Hebat! Tidak ada task yang terlambat.</p></div>`;
-                } else {
-                    let htmlList = '';
-                    const maxDisplay = Math.min(5, overdueTasks.length);
-                    for(let i=0; i < maxDisplay; i++) {
-                        let t = overdueTasks[i];
-                        let projName = projects.find(p => p.id == t.project_id)?.name || "Unknown Project";
-                        const diffTime = Math.abs(new Date(today) - new Date(t.deadline));
-                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        htmlList += `
-                        <div onclick="openProject(${t.project_id})" class="cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between p-4 border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
-                            <div><h4 class="font-bold text-slate-900 text-sm">${t.title}</h4><p class="text-xs text-slate-500 mt-1"><i data-lucide="folder" class="w-3 h-3 inline"></i> ${projName}</p></div>
-                            <div class="mt-2 sm:mt-0 text-right"><span class="block text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded">Telat ${diffDays} Hari</span><span class="block text-[11px] text-slate-400 mt-1">Selesai: ${t.deadline}</span></div>
-                        </div>`;
-                    }
-                    if(overdueTasks.length > 5) htmlList += `<div class="text-center p-3 text-xs text-brand-600 font-medium cursor-pointer hover:underline" onclick="showAllTasks(event)">Lihat ${overdueTasks.length - 5} task lainnya di Semua Task &rarr;</div>`;
-                    overdueContainer.innerHTML = htmlList;
-                }
-                
-                document.getElementById('statNearDeadlineBadge').innerText = `${nearTasks.length} Task`;
-                document.getElementById('statTodayDeadlineBadge').innerText = `${todayTasks.length} Task`;
-                document.getElementById('dashboardTodayDeadlineList').innerHTML = todayTasks.length ? todayTasks.map(t => `<div onclick="openProject(${t.project_id})" class="cursor-pointer flex items-center justify-between p-4 border-b border-slate-100 hover:bg-red-50 transition-colors"><div><h4 class="font-bold text-slate-900 text-sm">${esc(t.title)}</h4><p class="text-xs text-slate-500 mt-1"><i data-lucide="folder" class="w-3 h-3 inline"></i> ${esc(projects.find(p=>p.id==t.project_id)?.name||'Unknown')}</p></div><span class="text-xs font-semibold text-red-700 bg-red-100 px-2 py-1 rounded">Hari ini</span></div>`).join('') : '<div class="text-center p-6 text-sm text-slate-500">Tidak ada deadline hari ini.</div>';
-                document.getElementById('dashboardNearDeadlineList').innerHTML = nearTasks.length ? nearTasks.map(t => `<div onclick="openProject(${t.project_id})" class="cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between p-4 border-b border-slate-100 hover:bg-amber-50 transition-colors"><div><h4 class="font-bold text-slate-900 text-sm">${esc(t.title)}</h4><p class="text-xs text-slate-500 mt-1"><i data-lucide="folder" class="w-3 h-3 inline"></i> ${esc(projects.find(p=>p.id==t.project_id)?.name||'Unknown')}</p></div><span class="mt-2 sm:mt-0 text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-1 rounded">${t.deadline}</span></div>`).join('') : '<div class="text-center p-6 text-sm text-slate-500">Tidak ada deadline dalam 3 hari ke depan.</div>';
-                lucide.createIcons();
-            }
-        }
-
-        function updateDashboardChart(todo, progress, done) {
-            const ctx = document.getElementById('taskStatusChart');
-            const total = todo + progress + done;
-            const percentDone = total === 0 ? 0 : Math.round((done / total) * 100);
-
-            const textDiv = document.getElementById("chartCenterText");
-            const percentageSpan = document.getElementById("chartCenterPercentage");
-            if(total > 0) { textDiv.classList.remove("hidden"); percentageSpan.innerText = `${percentDone}%`; } else { textDiv.classList.add("hidden"); }
-
-            if(dashboardChartInstance) dashboardChartInstance.destroy(); 
-            dashboardChartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Todo', 'Progress', 'Done'],
-                    datasets: [{
-                        data: total === 0 ? [1] : [todo, progress, done],
-                        backgroundColor: total === 0 ? ['#f1f5f9'] : ['#fef3c7', '#dbeafe', '#22c55e'],
-                        borderWidth: 0, hoverOffset: 4
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false, cutout: '75%',
-                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20, font: { family: "'Inter', sans-serif", size: 12 } } }, tooltip: { callbacks: { label: function(context) { if(total === 0) return ' Belum ada data'; let label = context.label || ''; if (label) label += ': '; if (context.parsed !== null) label += context.parsed + ' Task'; return label; } } } }
-                }
-            });
-        }
-
-        async function loadProjectDropdown() {
-            const { data } = await client.from("projects").select("*").eq("archived", false).order("id");
-            if (!data) return;
-            let filterHtml = `<option value="">Semua Project</option>`, formHtml = "";
-            data.forEach(p => { filterHtml += `<option value="${p.id}">${p.name}</option>`; formHtml += `<option value="${p.id}">${p.name}</option>`; });
-            document.getElementById("filterProject").innerHTML = filterHtml;
-            document.getElementById("kanbanFilterProject").innerHTML = filterHtml; // Kanban filter dropdown
-            document.getElementById("taskProject").innerHTML = formHtml;
-            projectCache = data;
-            const resourceOptions = `<option value="">Pilih project</option>` + formHtml;
-            document.getElementById("documentProject").innerHTML = resourceOptions;
-            document.getElementById("noteProject").innerHTML = resourceOptions;
-            const filterOptions = `<option value="">Semua Project</option>` + formHtml;
-            document.getElementById("documentProjectFilter").innerHTML = filterOptions;
-            document.getElementById("noteProjectFilter").innerHTML = filterOptions;
-        }
-
-        // === LOGIKA KANBAN & DRAG DROP ===
-        async function renderKanban() {
-            const filterProj = document.getElementById("kanbanFilterProject").value;
-            let tasks = tasksCache;
-
-            if(filterProj) tasks = tasks.filter(t => t.project_id == filterProj);
-            
-            const cols = { todo: document.getElementById("kanbanColTodo"), progress: document.getElementById("kanbanColProgress"), done: document.getElementById("kanbanColDone") };
-            let counts = { todo: 0, progress: 0, done: 0 };
-            const today = new Date().toISOString().split('T')[0];
-            
-            // Bersihkan kolom
-            Object.values(cols).forEach(col => col.innerHTML = '');
-
-            tasks.forEach(t => {
-                if(!cols[t.status]) return; // Skip if invalid status
-                counts[t.status]++;
-                
-                let proj = projectCache.find(p => p.id == t.project_id) || { name: 'Unknown', color: '#ccc' };
-                let deadlineClass = "text-slate-500 bg-slate-100";
-                let deadlineIcon = "calendar";
-                
-                if (t.status !== 'done') {
-                    if (t.deadline < today) { deadlineClass = "text-red-600 bg-red-100"; deadlineIcon = "alert-triangle"; }
-                    else if (t.deadline === today) { deadlineClass = "text-amber-600 bg-amber-100"; deadlineIcon = "clock"; }
-                }
-
-                // Checklists status
-                let checklistText = '';
-                if(t.subtasks && t.subtasks.length > 0) {
-                    const doneCount = t.subtasks.filter(s => s.done).length;
-                    checklistText = `<span class="flex items-center gap-1 text-[11px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded"><i data-lucide="check-square" class="w-3 h-3"></i> ${doneCount}/${t.subtasks.length}</span>`;
-                }
-
-                const cardHtml = `
-                <div class="kanban-card bg-white p-4 rounded-xl shadow-sm border border-slate-200 hover:border-brand-300 hover:shadow-md transition-all dark:bg-slate-800 dark:border-slate-600" 
-                     draggable="true" 
-                     ondragstart="kanbanDragStart(event, ${t.id})" 
-                     ondragend="kanbanDragEnd(event)"
-                     onclick='editTask(${JSON.stringify(t).replace(/'/g, "&#39;")})'>
-                    
-                    <div class="flex justify-between items-start mb-2">
-                        <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded tracking-wide" style="color: ${proj.color}; background-color: ${proj.color}20">${proj.name}</span>
-                        <div class="flex gap-2">
-                            ${checklistText}
-                        </div>
-                    </div>
-                    
-                    <h4 class="font-bold text-slate-800 text-sm mb-1 leading-snug dark:text-slate-100">${t.title}</h4>
-                    ${t.description ? `<p class="text-xs text-slate-500 line-clamp-2 mb-3 leading-relaxed dark:text-slate-400">${t.description}</p>` : '<div class="mb-3"></div>'}
-                    
-                    <div class="mt-auto flex justify-between items-center border-t border-slate-100 pt-3 dark:border-slate-700">
-                        <span class="flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded ${deadlineClass}"><i data-lucide="${deadlineIcon}" class="w-3 h-3"></i> ${t.deadline}</span>
-                        
-                        <div class="flex -space-x-2">
-                            <!-- Placeholder User Avatar (Kanban look) -->
-                            <img class="w-6 h-6 rounded-full border-2 border-white dark:border-slate-800" src="https://ui-avatars.com/api/?name=F+E&background=random&color=fff" alt="User">
-                        </div>
-                    </div>
-                </div>`;
-                
-                cols[t.status].insertAdjacentHTML('beforeend', cardHtml);
-            });
-
-            document.getElementById("kanbanCountTodo").innerText = counts.todo;
-            document.getElementById("kanbanCountProgress").innerText = counts.progress;
-            document.getElementById("kanbanCountDone").innerText = counts.done;
-            lucide.createIcons();
-        }
-
-        // Drag & Drop Events
-        function kanbanDragStart(ev, taskId) {
-            ev.dataTransfer.setData("taskId", taskId);
-            setTimeout(() => { ev.target.classList.add('dragging'); }, 0);
-        }
-        function kanbanDragEnd(ev) {
-            ev.target.classList.remove('dragging');
-            document.querySelectorAll('.kanban-dropzone').forEach(el => el.classList.remove('drag-over'));
-        }
-        function kanbanAllowDrop(ev) {
-            ev.preventDefault();
-        }
-        function kanbanDragEnter(ev) {
-            ev.preventDefault();
-            const dropzone = ev.target.closest('.kanban-dropzone');
-            if(dropzone) dropzone.classList.add('drag-over');
-        }
-        function kanbanDragLeave(ev) {
-            const dropzone = ev.target.closest('.kanban-dropzone');
-            if(dropzone) dropzone.classList.remove('drag-over');
-        }
-        async function kanbanDrop(ev, newStatus) {
-            ev.preventDefault();
-            document.querySelectorAll('.kanban-dropzone').forEach(el => el.classList.remove('drag-over'));
-            
-            const taskId = ev.dataTransfer.getData("taskId");
-            if (!taskId) return;
-            
-            // Update local cache optimistically
-            const taskIndex = tasksCache.findIndex(t => t.id == taskId);
-            if (taskIndex > -1 && tasksCache[taskIndex].status !== newStatus) {
-                tasksCache[taskIndex].status = newStatus;
-                renderKanban(); // Re-render instan ke UI
-                
-                try {
-                    // Simpan ke DB secara asinkron
-                    await client.from("tasks").update({ status: newStatus }).eq("id", taskId);
-                    showToast("Task dipindahkan", "success");
-                    loadStats(); // Update dashboard charts in background
-                } catch(e) {
-                    showToast("Gagal memindahkan task", "danger");
-                }
-            }
-        }
-
-        const esc = (value = '') => String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-        const localRows = (name) => JSON.parse(localStorage.getItem(`taskflow-${name}`) || '[]');
-        const saveLocalRows = (name, rows) => localStorage.setItem(`taskflow-${name}`, JSON.stringify(rows));
-        
-        async function loadResources() {
-            const [docRes, noteRes] = await Promise.all([
-                client.from('documents').select('*').order('created_at', {ascending:false}),
-                client.from('notes').select('*').order('created_at', {ascending:false})
-            ]);
-            documentsData = docRes.error ? localRows('documents') : (docRes.data || []);
-            notesData = noteRes.error ? localRows('notes') : (noteRes.data || []);
-            renderDocuments(); renderNotes(); renderNotifications();
-        }
-        function projectName(id) { return projectCache.find(p => String(p.id) === String(id))?.name || 'Tanpa project'; }
-        function projectColor(id) { return projectCache.find(p => String(p.id) === String(id))?.color || '#f59e0b'; }
-        
-        function renderDocuments() { /*... existing render logic ...*/ 
-            const target = document.getElementById('documentsList'); if (!target) return;
-            const filter=document.getElementById('documentProjectFilter')?.value || '', query=(document.getElementById('documentSearch')?.value || '').toLowerCase(); const rows=documentsData.filter(d=>(!filter || String(d.project_id)===filter) && `${d.name} ${d.description||''} ${projectName(d.project_id)}`.toLowerCase().includes(query));
-            target.innerHTML = rows.length ? rows.map(d => `<div class="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"><div class="flex gap-3"><div class="w-10 h-10 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center shrink-0"><i data-lucide="file-text" class="w-5 h-5"></i></div><div><p class="font-semibold text-slate-800">${esc(d.name)}</p><p class="text-sm text-slate-500">${esc(d.description || 'Tanpa deskripsi')} · ${esc(projectName(d.project_id))}</p></div></div><div class="flex gap-2 items-center">${d.file_url ? `<a href="${esc(d.file_url)}" target="_blank" class="resource-action edit" title="Buka dokumen"><i data-lucide="external-link" class="w-4 h-4"></i></a>` : ''}<button onclick="editDocument(${d.id})" class="resource-action edit" title="Edit dokumen"><i data-lucide="pencil" class="w-4 h-4"></i></button><button onclick="deleteDocument(${d.id})" class="resource-action delete" title="Hapus dokumen"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`).join('') : '<div class="p-12 text-center text-slate-500">Dokumen tidak ditemukan.</div>';
-            lucide.createIcons();
-        }
-        function renderNotes() { /*... existing render logic ...*/ 
-            const target = document.getElementById('notesList'); if (!target) return;
-            const filter=document.getElementById('noteProjectFilter')?.value || '', query=(document.getElementById('noteSearch')?.value || '').toLowerCase(); const rows=notesData.filter(n=>(!filter || String(n.project_id)===filter) && `${n.title} ${n.content} ${projectName(n.project_id)}`.toLowerCase().includes(query));
-            target.innerHTML = rows.length ? rows.map(n => { const color=projectColor(n.project_id); return `<article class="note-card rounded-2xl p-5 relative overflow-hidden" style="border-color:${color}80;box-shadow:0 8px 20px ${color}22"><i data-lucide="quote" class="absolute -right-2 -top-2 w-20 h-20 opacity-20" style="color:${color}"></i><div class="flex justify-between gap-3 relative"><div><p class="text-[11px] uppercase tracking-wider font-bold mb-2" style="color:${color}">${esc(projectName(n.project_id))}</p><h3 class="font-bold text-slate-800 text-lg">${esc(n.title)}</h3></div><div class="flex gap-2"><button onclick="editNote(${n.id})" class="resource-action edit" title="Edit catatan"><i data-lucide="pencil" class="w-4 h-4"></i></button><button onclick="deleteNote(${n.id})" class="resource-action delete" title="Hapus catatan"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div><p class="text-sm text-slate-600 whitespace-pre-wrap mt-4 leading-6 relative">${esc(n.content)}</p>${n.link_url ? `<a href="${esc(n.link_url)}" target="_blank" class="inline-flex items-center gap-1 text-xs font-bold mt-5 relative" style="color:${color}"><i data-lucide="link" class="w-3.5 h-3.5"></i> Buka tautan terkait</a>` : ''}</article>`; }).join('') : '<div class="col-span-full py-12 text-center text-slate-500">Catatan tidak ditemukan.</div>';
-            lucide.createIcons();
-        }
-        function renderProjectResources(projectId) {
-            const docs = documentsData.filter(d => String(d.project_id) === String(projectId));
-            const notes = notesData.filter(n => String(n.project_id) === String(projectId));
-            document.getElementById('projectDocumentsList').innerHTML = docs.length ? docs.map(d => `<div class="flex gap-2 items-center"><i data-lucide="file" class="w-4 h-4 text-brand-600 shrink-0"></i><span class="flex-1 truncate">${esc(d.name)}</span>${d.file_url ? `<a href="${esc(d.file_url)}" target="_blank" class="text-brand-600"><i data-lucide="external-link" class="w-3.5 h-3.5"></i></a>` : ''}<button onclick="editDocument(${d.id})" class="text-brand-600"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button onclick="deleteDocument(${d.id})" class="text-red-600"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div>`).join('') : '<p class="text-slate-500 text-xs">Belum ada dokumen.</p>';
-            document.getElementById('projectNotesList').innerHTML = notes.length ? notes.map(n => `<div class="border-l-2 border-amber-400 pl-3"><div class="flex gap-2"><b class="text-slate-800 flex-1">${esc(n.title)}</b><button onclick="editNote(${n.id})" class="text-brand-600"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button onclick="deleteNote(${n.id})" class="text-red-600"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div><p class="text-slate-500 text-xs mt-1 line-clamp-3">${esc(n.content)}</p></div>`).join('') : '<p class="text-slate-500 text-xs">Belum ada catatan.</p>';
-            lucide.createIcons();
-        }
-
-        async function renderTable() {
-            const tableBody = document.getElementById('taskTableBody');
-            const searchQ = document.getElementById('searchInput').value.toLowerCase();
-            const filterProj = document.getElementById('filterProject').value;
-            const filterStat = document.getElementById('filterStatus').value;
-            const sortBy = document.getElementById('sortData').value;
-            
-            let filteredTasks = tasksCache.filter(t => {
-                const proj = projectCache.find(p => p.id == t.project_id) || {};
-                const projectName = (proj.name || "").toLowerCase();
-                let matchSearch = t.title.toLowerCase().includes(searchQ) || (t.description || "").toLowerCase().includes(searchQ) || projectName.includes(searchQ);
-                let matchProj = filterProj ? t.project_id == filterProj : true;
-                let matchStat = filterStat ? t.status == filterStat : true;
-                return (matchSearch && matchProj && matchStat);
-            });
-
-            const statusOrder = { progress: 1, todo: 2, done: 3 };
-            filteredTasks.sort((a, b) => {
-                if (statusOrder[a.status] !== statusOrder[b.status]) return statusOrder[a.status] - statusOrder[b.status];
-                if (sortBy === "deadline_asc") return new Date(a.deadline) - new Date(b.deadline);
-                if (sortBy === "deadline_description") return new Date(b.deadline) - new Date(a.deadline);
-                if (sortBy === "newest") return b.id - a.id;
-                return 0;
-            });
-
-            if (filteredTasks.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="7" class="text-center py-12 text-slate-500">Tidak ada Task ditemukan.</td></tr>`;
-                return;
-            }
-
-            let html = '';
-            const today = new Date().toISOString().split('T')[0];
-
-            filteredTasks.forEach(t => {
-                let proj = projectCache.find(p => p.id == t.project_id) || { name: 'Unknown', color: '#ccc' };
-                let deadlineBadge = '';
-                if (t.status === 'done') deadlineBadge = `<span class="badge success"><i data-lucide="check" class="w-3 h-3"></i> Selesai</span>`;
-                else if (t.deadline < today) deadlineBadge = `<span class="badge danger"><i data-lucide="alert-triangle" class="w-3 h-3"></i> Terlambat</span>`;
-                else if (t.deadline === today) deadlineBadge = `<span class="badge warning"><i data-lucide="clock" class="w-3 h-3"></i> Hari Ini</span>`;
-                else deadlineBadge = `<span class="text-sm text-slate-600">${t.deadline}</span>`;
-
-                let progress = '';
-                if (t.subtasks && t.subtasks.length > 0) {
-                    let doneC = t.subtasks.filter(s => s.done).length;
-                    progress = `<div class="text-[11px] mt-1 text-slate-400 flex items-center gap-1"><i data-lucide="list-checks" class="w-3 h-3"></i> ${Math.round((doneC / t.subtasks.length) * 100)}%</div>`;
-                }
-
-                let statusHtml = "";
-                if (t.status === "todo") statusHtml = `<span class="badge warning status-toggle" onclick="toggleStatus(${t.id}, 'progress')">Todo</span>`;
-                else if (t.status === "progress") statusHtml = `<span class="badge" style="background:#DBEAFE;color:#2563EB;" onclick="toggleStatus(${t.id}, 'done')">Progress</span>`;
-                else statusHtml = `<span class="badge success status-toggle" onclick="toggleStatus(${t.id}, 'todo')">Done</span>`;
-
-                let attArray = [];
-                if (t.attachment) { try { attArray = JSON.parse(t.attachment); if(!Array.isArray(attArray)) attArray=[t.attachment]; } catch(e) { attArray = [t.attachment]; } }
-                let lampiranHtml = attArray.length > 0 ? `<a href="${attArray[0]}" target="_blank" class="text-brand-600 text-sm hover:underline flex items-center gap-1"><i data-lucide="paperclip" class="w-3.5 h-3.5"></i> ${attArray.length} File</a>` : '-';
-
-                html += `
-                    <tr class="hover:bg-slate-50/80 transition-colors">
-                        <td class="text-center px-5 py-4 align-middle"><input type="checkbox" class="custom-checkbox" ${t.status === 'done' ? 'checked' : ''} onclick="toggleStatus(${t.id}, '${t.status === 'todo' ? 'progress' : t.status === 'progress' ? 'done' : 'todo'}')"></td>
-                        <td class="px-5 py-4 align-middle"><div class="flex flex-col gap-1 min-w-[200px] whitespace-normal"><span class="font-semibold text-slate-900">${t.title}</span>${t.description ? `<span class="text-xs text-slate-500 line-clamp-2 leading-relaxed">${t.description}</span>` : ''}${progress}</div></td>
-                        <td class="px-5 py-4 align-middle"><span class="badge badge-project cursor-pointer hover:border-brand-500 hover:shadow-sm transition-all w-40 justify-start" onclick="openProject(${t.project_id})" title="${proj.name}"><i data-lucide="folder" class="w-3 h-3 shrink-0" style="color:${proj.color}"></i> <span class="truncate text-left w-full">${proj.name}</span></span></td>
-                        <td class="px-5 py-4 align-middle">${deadlineBadge}</td>
-                        <td class="px-5 py-4 align-middle">${statusHtml}</td>
-                        <td class="px-5 py-4 align-middle">${lampiranHtml}</td>
-                        <td class="px-5 py-4 align-middle"><div class="flex gap-2"><button class="action-btn" onclick='editTask(${JSON.stringify(t).replace(/'/g, "&#39;")})'><i data-lucide="pencil" class="w-4 h-4"></i></button><button class="action-btn text-red-500 hover:text-red-700 hover:bg-red-50" onclick="confirmDelete(${t.id}, 'task')"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></td>
-                    </tr>`;
-            });
-            tableBody.innerHTML = html; lucide.createIcons();
-        }
-
-        async function renderProjects() { /* ... existing renderProjects ... */ 
-            const container = document.getElementById("projectList");
-            const projects = projectCache; const tasks = tasksCache;
-            
-            if (projects.length === 0) {
-                container.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-slate-200 border-dashed"><i data-lucide="folder-open" class="w-12 h-12 text-slate-300 mb-4"></i><h3 class="text-lg font-bold text-slate-700 mb-1">Belum Ada Project</h3><p class="text-slate-500 text-sm mb-6">Silakan tambahkan project pertama Anda.</p><button onclick="openProjectModal()" class="btn btn-outline"><i data-lucide="plus" class="w-4 h-4"></i> Tambah Project</button></div>`;
-                lucide.createIcons(); return;
-            }
-                
-            let html = "";
-            projects.forEach(p => {
-                const total = tasks.filter(t => t.project_id == p.id).length;
-                const todo = tasks.filter(t => t.project_id == p.id && t.status == "todo").length;
-                const progress = tasks.filter(t => t.project_id == p.id && t.status == "progress").length;
-                const done = tasks.filter(t => t.project_id == p.id && t.status == "done").length;
-                const percent = total == 0 ? 0 : Math.round(((done * 1) + (progress * 0.5)) / total * 100);
-                const nearest = tasks.filter(t => t.project_id == p.id).sort((a,b) => new Date(a.deadline) - new Date(b.deadline))[0];
-                const dateDisplay = nearest ? new Date(nearest.deadline).toLocaleDateString("id-ID", { day:"2-digit", month:"short", year:"numeric" }) : "-";
-                const projColor = p.color || "#3b82f6";
-                    
-                html += `<div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 relative overflow-hidden group flex flex-col h-full cursor-pointer" onclick="openProject(${p.id})"><div class="absolute top-0 left-0 w-full h-1.5" style="background-color: ${projColor}"></div><div class="flex-1"><h4 class="font-bold text-slate-900 text-lg mb-1 group-hover:opacity-80 transition-opacity" style="color: ${projColor}">${p.name}</h4><p class="text-sm text-slate-500 mb-6 line-clamp-2 min-h-[40px]">${p.description || "-"}</p><div class="mb-5"><div class="flex justify-between items-end mb-2"><span class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">${done} dari ${total} Task selesai</span><span class="text-sm font-bold" style="color: ${projColor}">${percent}%</span></div><div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full rounded-full transition-all duration-500 ease-out" style="width: ${percent}%; background-color: ${projColor}"></div></div></div><div class="space-y-2 text-sm mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100"><div class="flex justify-between items-center text-slate-600"><span class="text-xs">Todo :</span><span class="font-semibold text-slate-900">${todo}</span></div><div class="flex justify-between items-center text-slate-600"><span class="text-xs">Progress :</span><span class="font-semibold text-slate-900">${progress}</span></div><div class="flex justify-between items-center text-slate-600"><span class="text-xs">Done :</span><span class="font-semibold text-slate-900">${done}</span></div></div></div><div class="mt-auto pt-4 border-t border-slate-100"><div class="flex items-center gap-2 text-xs font-medium text-slate-500 mb-4 w-fit px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-100"><i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400"></i> ${dateDisplay}</div><div class="flex gap-3"><button onclick="event.stopPropagation(); editProject(${JSON.stringify(p).replace(/'/g, "&#39;")})" class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-brand-50 text-brand-600 hover:bg-brand-100 text-sm font-semibold transition-colors"><i data-lucide="pencil" class="w-4 h-4"></i> Edit</button><button onclick="event.stopPropagation(); confirmDelete(${p.id}, 'project')" class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-sm font-semibold transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i> Hapus</button></div></div></div>`;
-            });
-            container.innerHTML = html; lucide.createIcons();
-        }
-
-        async function openProject(projectId){
-            currentProjectId = projectId;
-            const project = projectCache.find(p=>p.id==projectId); if (!project) return;
-            const tasks = tasksCache.filter(t=>t.project_id==projectId);
-            
-            ['dashboardPage','projectPage','taskPage','kanbanPage','archivePage','documentsPage','notesPage','reportsPage'].forEach(id => document.getElementById(id).style.display='none');
-            document.getElementById("projectDetailPage").style.display="block";
-            
-            document.getElementById("mainHeaderTitle").innerText = project.name;
-            document.getElementById("mainHeaderDesc").innerText = project.description || "Detail pekerjaan untuk project ini.";
-            document.getElementById("btnEditProjectDetail").style.display = "inline-flex";
-            document.getElementById("btnEditProjectDetail").onclick = () => { editProject(project); };
-
-            renderProjectCards(tasks); renderProjectResources(projectId); activateMenu(document.getElementById("menu-project"));
-        }
-
-        function renderProjectCards(tasks) {
-            const container = document.getElementById("projectTaskCards");
-            if (tasks.length === 0) { container.innerHTML = `<div class="col-span-full text-center py-10 text-slate-500">Belum ada task di project ini.</div>`; return; }
-            let html = "";
-            tasks.forEach(task => {
-                let attArray = []; if (task.attachment) { try { attArray = JSON.parse(task.attachment); if(!Array.isArray(attArray)) attArray=[task.attachment]; } catch(e) { attArray = [task.attachment]; } }
-                let attachmentsHTML = attArray.length > 0 ? `<div class="mt-3 pt-3 border-t border-slate-100"><div class="flex flex-wrap gap-2">` + attArray.map((url, i) => `<a href="${url}" target="_blank" class="text-xs bg-slate-50 text-slate-600 px-2 py-1 rounded border border-slate-200 flex items-center gap-1 hover:bg-slate-100 transition-colors"><i data-lucide="paperclip" class="w-3 h-3"></i> File ${i+1}</a>`).join("") + `</div></div>` : "";
-                let subtasksHTML = (task.subtasks && task.subtasks.length > 0) ? `<div class="mt-4 pt-3 border-t border-slate-100"><div class="text-xs font-semibold text-slate-500 mb-2 flex items-center gap-1"><i data-lucide="list-checks" class="w-3.5 h-3.5"></i> Checklist</div>` + task.subtasks.map((sub, idx) => `<div class="flex items-center gap-2 mb-1"><input type="checkbox" onchange="updateSubtaskStatus(${task.id}, ${idx}, this.checked)" ${sub.done ? "checked" : ""} class="custom-checkbox w-3.5 h-3.5"><span class="text-xs ${sub.done ? 'line-through text-slate-400' : 'text-slate-600'}">${sub.title}</span></div>`).join("") + `</div>` : "";
-                
-                html += `<div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-all"><div><h3 class="font-bold text-slate-900">${task.title}</h3><p class="text-sm text-slate-500 mt-1">${task.description || "-"}</p>${subtasksHTML}${attachmentsHTML}</div><div class="mt-4 pt-4 border-t border-slate-50 flex items-center justify-between"><div class="flex flex-wrap gap-2"><span class="text-[11px] bg-slate-50 border border-slate-100 text-slate-600 px-2 py-1 rounded-md flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i> ${task.deadline}</span><span class="text-[11px] bg-brand-50 text-brand-600 px-2 py-1 rounded-md font-medium uppercase">${task.status}</span></div><div class="flex items-center gap-1"><button class="p-1.5 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-md transition-colors" onclick='editTask(${JSON.stringify(task).replace(/'/g, "&#39;")})'><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" onclick="confirmDelete(${task.id}, 'task')"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div></div></div>`;
-            });
-            container.innerHTML = html; lucide.createIcons();
-        }
-
-        window.updateSubtaskStatus = async function(taskId, index, checked) {
-            try {
-                const task = tasksCache.find(t=>t.id==taskId);
-                if (task && task.subtasks) {
-                    task.subtasks[index].done = checked;
-                    await client.from("tasks").update({ subtasks: task.subtasks }).eq("id", taskId);
-                    await loadStats(); 
-                }
-            } catch(e) { showToast("Gagal mengubah status checklist", "danger"); }
-        }
-
-        function backToProjects() { currentProjectId = null; document.getElementById("projectDetailPage").style.display="none"; document.getElementById("projectPage").style.display="block"; document.getElementById("mainHeaderTitle").innerText="Project"; document.getElementById("mainHeaderDesc").innerText="Kelola seluruh project."; }
-
-        async function renderArchive(){
-            const { data: tasks } = await client.from("tasks").select("*").eq("archived", true);
-            const container = document.getElementById("archiveTableBody");
-            if(!tasks || tasks.length === 0){ container.innerHTML = `<tr><td colspan="6" class="text-center py-12 text-slate-500">Belum ada data arsip.</td></tr>`; return; }
-            
-            const keyword = document.getElementById("archiveSearch").value.toLowerCase();
-            let html = "";
-            tasks.filter(t => { const proj = projectCache.find(p => p.id == t.project_id); return t.title.toLowerCase().includes(keyword) || (proj?.name || "").toLowerCase().includes(keyword); }).forEach(task => {
-                const project = projectCache.find(p=>p.id==task.project_id); const archivedDate = task.archived_at ? new Date(task.archived_at).toLocaleDateString("id-ID", { day:"2-digit", month:"short", year:"numeric" }) : "-";
-                html += `<tr class="hover:bg-slate-50/80 transition-colors"><td class="px-5 py-4 align-middle"><div class="font-semibold text-slate-900">${task.title}</div><div class="text-xs text-slate-500 mt-1 max-w-[250px] truncate">${task.description || "-"}</div></td><td class="px-5 py-4 align-middle"><span class="badge badge-project w-40 justify-start" title="${project?.name || "-"}"><i data-lucide="folder" class="w-3 h-3 shrink-0"></i> <span class="truncate text-left w-full">${project?.name || "-"}</span></span></td><td class="px-5 py-4 align-middle"><span class="text-xs uppercase font-semibold text-slate-500">${task.status}</span></td><td class="px-5 py-4 align-middle text-sm text-slate-600">${task.deadline || "-"}</td><td class="px-5 py-4 align-middle text-sm text-slate-600">${archivedDate}</td><td class="px-5 py-4 align-middle"><div class="flex gap-2"><button class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition" onclick="restoreTask(${task.id})"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Restore</button><button class="bg-white border border-red-200 hover:bg-red-50 text-red-600 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition" onclick="deleteForever(${task.id})"><i data-lucide="trash" class="w-3.5 h-3.5"></i> Hapus</button></div></td></tr>`;
-            });
-            container.innerHTML = html; lucide.createIcons();
-        }
-
-        function handleSearch() { clearTimeout(searchTimeout); searchTimeout = setTimeout(() => { renderTable(); }, 300); }
-        function resetFilters() { document.getElementById('searchInput').value = ''; document.getElementById('filterProject').value = ''; document.getElementById('filterStatus').value = ''; document.getElementById('sortData').value = 'deadline_asc'; renderTable(); }
-        function activateMenu(el) {
-            document.querySelectorAll(".menu-item").forEach(m => { m.classList.remove("bg-brand-50", "text-brand-600", "active-menu"); m.classList.add("text-slate-600"); const icon = m.querySelector('i'); if(icon) { icon.classList.remove("text-brand-600"); icon.classList.add("text-slate-400"); } });
-            el.classList.remove("text-slate-600"); el.classList.add("bg-brand-50", "text-brand-600", "active-menu"); const activeIcon = el.querySelector('i'); if(activeIcon) { activeIcon.classList.remove("text-slate-400"); activeIcon.classList.add("text-brand-600"); }
-        }
-        function hideAllPages() { ['dashboardPage','taskPage','kanbanPage','projectPage','projectDetailPage','archivePage','documentsPage','notesPage','reportsPage'].forEach(id => document.getElementById(id).style.display='none'); }
-
-        async function showDashboard(e) { if(e) e.preventDefault(); activateMenu(document.getElementById("menu-dashboard")||e.currentTarget); document.getElementById("mainHeaderTitle").innerText = "Dashboard"; document.getElementById("mainHeaderDesc").innerText = "Ringkasan aktivitas dan pekerjaan Anda."; hideAllPages(); document.getElementById("dashboardPage").style.display="block"; await refreshAll(); }
-        async function showAllTasks(e) { if(e) e.preventDefault(); activateMenu(document.getElementById("menu-semua-task")||e.currentTarget); document.getElementById("mainHeaderTitle").innerText = "Semua Task"; document.getElementById("mainHeaderDesc").innerText = "Kelola semua tugas dari berbagai project dalam satu tempat."; hideAllPages(); document.getElementById("taskPage").style.display="block"; await refreshAll(); }
-        async function showKanban(e) { if(e) e.preventDefault(); activateMenu(document.getElementById("menu-kanban")||e.currentTarget); document.getElementById("mainHeaderTitle").innerText = "Papan Kanban"; document.getElementById("mainHeaderDesc").innerText = "Kelola progres pekerjaan Anda dengan tampilan papan visual interaktif."; hideAllPages(); document.getElementById("kanbanPage").style.display="block"; await refreshAll(); }
-        async function showProjects(e) { if(e) e.preventDefault(); activateMenu(document.getElementById("menu-project")||e.currentTarget); document.getElementById("mainHeaderTitle").innerText = "Project"; document.getElementById("mainHeaderDesc").innerText = "Kelola seluruh project."; hideAllPages(); document.getElementById("projectPage").style.display="block"; await renderProjects(); }
-        async function showArchive(e) { if(e) e.preventDefault(); activateMenu(document.getElementById("menu-arsip")||e.currentTarget); document.getElementById("mainHeaderTitle").innerText = "Arsip Task"; document.getElementById("mainHeaderDesc").innerText = "Task yang telah diarsipkan masih dapat dipulihkan."; hideAllPages(); document.getElementById("archivePage").style.display="block"; await renderArchive(); }
-        async function showDocuments(e) { if(e) e.preventDefault(); activateMenu(document.getElementById('menu-documents')); document.getElementById('mainHeaderTitle').innerText = 'Dokumen'; document.getElementById('mainHeaderDesc').innerText = 'Arsip dokumen setiap project.'; hideAllPages(); document.getElementById('documentsPage').style.display='block'; await loadResources(); }
-        async function showNotes(e) { if(e) e.preventDefault(); activateMenu(document.getElementById('menu-notes')); document.getElementById('mainHeaderTitle').innerText = 'Catatan'; document.getElementById('mainHeaderDesc').innerText = 'Catatan terhubung ke project.'; hideAllPages(); document.getElementById('notesPage').style.display='block'; await loadResources(); }
-        async function showReports(e) { if(e) e.preventDefault(); activateMenu(document.getElementById('menu-reports')); document.getElementById('mainHeaderTitle').innerText='Laporan'; document.getElementById('mainHeaderDesc').innerText='Ringkasan project dan task yang dapat diunduh.'; hideAllPages(); document.getElementById('reportsPage').style.display='block'; await loadReportSummary(); }
-
-        async function toggleStatus(id, newStatus) { await client.from("tasks").update({ status: newStatus }).eq("id", id); showToast("Status berhasil diubah","success"); await refreshAll(); }
-        function openProjectModal() { document.getElementById('project_id').value = ''; document.getElementById('projectName').value = ''; document.getElementById('projectDesc').value = ''; document.getElementById('projectModalTitle').innerText = 'Tambah Project Baru'; document.getElementById('projectModal').classList.add('active'); }
-        function editProject(project) { document.getElementById("projectModal").classList.add("active"); document.getElementById("projectModalTitle").innerText = "Edit Info Project"; document.getElementById("project_id").value = project.id; document.getElementById("projectName").value = project.name; document.getElementById("projectDesc").value = project.description || ""; document.querySelectorAll(".color-btn").forEach(btn => { btn.classList.remove("active"); if(btn.dataset.color == project.color) btn.classList.add("active"); }); }
-        function selectColor(el) { document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('active')); el.classList.add('active'); }
-        async function saveProject() {
-            const name = document.getElementById('projectName').value; if (!name) return showToast("Nama project wajib diisi", "danger");
-            const data = { id: document.getElementById('project_id').value || null, name: name, description: document.getElementById('projectDesc').value, color: document.querySelector('.color-btn.active').getAttribute('data-color'), };
-            try { if (data.id) await client.from("projects").update({ name: data.name, description: data.description, color: data.color }).eq("id", data.id); else await client.from("projects").insert([{ name: data.name, description: data.description, color: data.color }]); showToast(data.id ? "Project diperbarui" : "Project ditambahkan", "success"); closeModal("projectModal"); await refreshAll(); } catch (err) { showToast(err.message, "danger"); }
-        }
-
-        window.handleFileChange = function(event) {
-            const fileInput = event.target; let totalSize = 0; Array.from(fileInput.files).forEach(f => totalSize += f.size);
-            if (totalSize > 10 * 1024 * 1024) { showToast("Total ukuran file baru maksimal 10MB", "danger"); fileInput.value = ''; }
-            renderAttachmentUI();
-        }
-        function renderAttachmentUI() {
-            const container = document.getElementById('currentFileDisplay'); let html = '';
-            existingAttachments.forEach((url, i) => {
-                let fileName = url.split('/').pop().split('?')[0] || `Lampiran ${i+1}`; try { fileName = decodeURIComponent(fileName); } catch(e){}
-                fileName = fileName.replace(/^\d+_/, '');
-                html += `<div class="flex items-center justify-between text-xs bg-slate-50 p-2 rounded mb-1 border border-slate-200"><a href="${url}" target="_blank" class="text-brand-600 truncate flex-1 flex items-center gap-1 hover:underline"><i data-lucide="paperclip" class="w-3 h-3"></i> ${fileName}</a><button type="button" class="text-red-500 hover:text-red-700 ml-2 p-1 bg-white border border-red-100 rounded" onclick="removeExistingAttachment(${i})" title="Hapus File"><i data-lucide="x" class="w-3 h-3"></i></button></div>`;
-            });
-            const fileInput = document.getElementById('taskFile');
-            if (fileInput && fileInput.files.length > 0) {
-                Array.from(fileInput.files).forEach((file) => { html += `<div class="flex items-center justify-between text-xs bg-blue-50 p-2 rounded mb-1 border border-blue-100"><span class="text-blue-700 truncate flex-1 flex items-center gap-1"><i data-lucide="upload-cloud" class="w-3 h-3"></i> ${file.name} (Akan Diupload)</span></div>`; });
-            }
-            container.innerHTML = html; lucide.createIcons();
-        }
-        window.removeExistingAttachment = function(index) { existingAttachments.splice(index, 1); renderAttachmentUI(); }
-
-        function openTaskModal() {
-            existingAttachments = []; document.getElementById('taskId').value = ''; document.getElementById('taskTitle').value = ''; document.getElementById('taskDesc').value = ''; document.getElementById('taskDeadline').value = ''; document.getElementById('taskFile').value = ''; document.getElementById('checklistContainer').innerHTML = ''; document.getElementById('taskModalTitle').innerText = 'Tambah Task Baru'; renderAttachmentUI();
-            if (document.getElementById('taskProject').options.length === 0) { showToast("Silakan buat Project terlebih dahulu", "warning"); return; }
-            if(currentProjectId) document.getElementById("taskProject").value = currentProjectId;
-            document.getElementById('taskModal').classList.add('active');
-        }
-
-        function editTask(task) {
-            openTaskModal(); document.getElementById('taskModalTitle').innerText = 'Edit Task'; document.getElementById('taskId').value = task.id; document.getElementById('taskProject').value = task.project_id; document.getElementById('taskTitle').value = task.title; document.getElementById('taskDeadline').value = task.deadline; document.getElementById('taskDesc').value = task.description; document.getElementById("taskStatus").value= task.status;
-            existingAttachments = [];
-            if (task.attachment) { try { const parsed = JSON.parse(task.attachment); if (Array.isArray(parsed)) existingAttachments = parsed; else existingAttachments = [task.attachment]; } catch(e) { existingAttachments = [task.attachment]; } }
-            renderAttachmentUI();
-            if(task.subtasks) task.subtasks.forEach(st => addChecklistItem(st.title, st.done));
-        }
-
-        function addChecklistItem(title = '', done = false) { const container = document.getElementById('checklistContainer'); const div = document.createElement('div'); div.className = 'checklist-item'; div.innerHTML = `<input type="checkbox" class="custom-checkbox chk-done" ${done ? 'checked' : ''}><input type="text" class="chk-title" placeholder="Nama subtask..." value="${title}"><i data-lucide="trash" class="w-4 h-4 text-red-500 cursor-pointer" onclick="this.parentElement.remove()"></i>`; container.appendChild(div); lucide.createIcons(); }
-        async function uploadAttachment(file){ if(!file) return ""; const fileName=`${Date.now()}_${file.name.replace(/\s+/g, '_')}`; const {error}=await client.storage.from("attachments").upload(fileName,file,{upsert:true}); if(error) throw error; return client.storage.from("attachments").getPublicUrl(fileName).data.publicUrl; }
-
-        async function saveTask() {
-            const title = document.getElementById('taskTitle').value; const project_id = document.getElementById('taskProject').value; const deadline = document.getElementById('taskDeadline').value;
-            if (!title || !project_id || !deadline) return showToast("Mohon lengkapi field wajib (*)", "danger");
-            const btn = document.getElementById('btnSaveTask'); btn.innerHTML = '<div class="spinner"></div> Menyimpan...'; btn.disabled = true;
-            let subtasks = []; document.querySelectorAll('.checklist-item').forEach(el => { let txt = el.querySelector('.chk-title').value; let done = el.querySelector('.chk-done').checked; if (txt) subtasks.push({ title: txt, done: done }); });
-            
-            let finalAttachments = [...existingAttachments]; const fileInput = document.getElementById('taskFile');
-            if (fileInput.files.length > 0) {
-                try { for (let i = 0; i < fileInput.files.length; i++) { let url = await uploadAttachment(fileInput.files[i]); if (url) finalAttachments.push(url); } } 
-                catch(err) { showToast("Upload lampiran gagal", "danger"); btn.innerHTML = "Simpan Task"; btn.disabled = false; return; }
-            }
-            const attachmentData = finalAttachments.length > 0 ? JSON.stringify(finalAttachments) : null;
-            const data = { project_id: Number(project_id), title: title, deadline: deadline, description: document.getElementById('taskDesc').value, subtasks: subtasks, attachment: attachmentData, status: document.getElementById("taskStatus").value };
-            const id = document.getElementById('taskId').value;
-            try { if(id) await client.from("tasks").update(data).eq("id",id); else await client.from("tasks").insert([data]); showToast("Task disimpan","success"); closeModal("taskModal"); await refreshAll(); } catch(e) { showToast("Terjadi kesalahan simpan", "danger"); } finally { btn.innerHTML = 'Simpan Task'; btn.disabled = false; }
-        }
-
-        function confirmDelete(id,type){ document.getElementById("deleteTargetId").value=id; document.getElementById("deleteTargetType").value=type; const project = type === 'project'; document.getElementById('deleteModalTitle').innerText=project?'Hapus Project Permanen':'Arsipkan Task'; document.getElementById('deleteConfirmButton').innerText=project?'Ya, Hapus Permanen':'Ya, Arsipkan'; document.getElementById("deleteMsg").innerHTML=project?'Project beserta seluruh task di dalamnya akan dihapus permanen dan tidak dapat dipulihkan.':'Apakah Anda yakin ingin mengarsipkan task ini?'; document.getElementById("deleteModal").classList.add("active"); }
-        async function executeDelete(){ const id=document.getElementById("deleteTargetId").value; const type=document.getElementById("deleteTargetType").value; if(type=="task") { await client.from("tasks").update({archived:true, archived_at:new Date().toISOString()}).eq("id",id); closeModal("deleteModal"); showToast("Task diarsipkan","success"); } else { await client.from("tasks").delete().eq("project_id",id); await client.from("projects").delete().eq("id",id); closeModal("deleteModal"); showToast("Project dihapus permanen","success"); } await refreshAll(); }
-        function openDocumentModal(projectId = '') { document.getElementById('documentId').value = ''; document.getElementById('documentName').value = ''; document.getElementById('documentDescription').value = ''; document.getElementById('documentUrl').value = ''; document.getElementById('documentExistingUrl').value=''; document.getElementById('documentFile').value=''; document.getElementById('documentProject').value = projectId || ''; document.getElementById('documentModalTitle').innerText = 'Tambah Dokumen'; document.getElementById('documentModal').classList.add('active'); }
-        function editDocument(id) { const d = documentsData.find(x => String(x.id) === String(id)); if (!d) return; document.getElementById('documentId').value=d.id; document.getElementById('documentProject').value=d.project_id; document.getElementById('documentName').value=d.name; document.getElementById('documentDescription').value=d.description || ''; document.getElementById('documentUrl').value=d.file_url || ''; document.getElementById('documentExistingUrl').value=d.file_url || ''; document.getElementById('documentFile').value=''; document.getElementById('documentModalTitle').innerText='Edit Dokumen'; document.getElementById('documentModal').classList.add('active'); }
-        async function saveDocument() { const id=document.getElementById('documentId').value, input=document.getElementById('documentFile'); let fileUrl=document.getElementById('documentUrl').value.trim() || document.getElementById('documentExistingUrl').value; if(input.files[0]) { if(input.files[0].size > 10 * 1024 * 1024) return showToast('Ukuran dokumen maksimal 10MB','danger'); try { fileUrl=await uploadAttachment(input.files[0]); } catch(e) { return showToast('Upload dokumen gagal. Pastikan bucket attachments tersedia.','danger'); } } const data={project_id:Number(document.getElementById('documentProject').value), name:document.getElementById('documentName').value.trim(), description:document.getElementById('documentDescription').value.trim(), file_url:fileUrl}; if(!data.project_id || !data.name) return showToast('Project dan nama dokumen wajib diisi','danger'); const result=id ? await client.from('documents').update(data).eq('id',id) : await client.from('documents').insert([data]); if(result.error) { const rows=localRows('documents'); if(id) { const i=rows.findIndex(x=>String(x.id)===String(id)); rows[i]={...rows[i],...data}; } else rows.unshift({id:Date.now(),...data,created_at:new Date().toISOString()}); saveLocalRows('documents',rows); showToast('Tabel documents belum tersedia; disimpan lokal. Jalankan SQL pendukung untuk sinkronisasi Supabase.','warning'); } else showToast('Dokumen disimpan','success'); closeModal('documentModal'); await loadResources(); if(currentProjectId) renderProjectResources(currentProjectId); }
-        async function deleteDocument(id) { if(!confirm('Hapus dokumen ini?')) return; const r=await client.from('documents').delete().eq('id',id); if(r.error) saveLocalRows('documents',localRows('documents').filter(x=>String(x.id)!==String(id))); await loadResources(); if(currentProjectId) renderProjectResources(currentProjectId); }
-        function openNoteModal(projectId = '') { document.getElementById('noteId').value=''; document.getElementById('noteProject').value=projectId || ''; document.getElementById('noteTitle').value=''; document.getElementById('noteContent').value=''; document.getElementById('noteUrl').value=''; document.getElementById('noteModalTitle').innerText='Tambah Catatan'; document.getElementById('noteModal').classList.add('active'); }
-        function editNote(id) { const n=notesData.find(x=>String(x.id)===String(id)); if(!n)return; document.getElementById('noteId').value=n.id; document.getElementById('noteProject').value=n.project_id; document.getElementById('noteTitle').value=n.title; document.getElementById('noteContent').value=n.content; document.getElementById('noteUrl').value=n.link_url || ''; document.getElementById('noteModalTitle').innerText='Edit Catatan'; document.getElementById('noteModal').classList.add('active'); }
-        async function saveNote() { const id=document.getElementById('noteId').value, data={project_id:Number(document.getElementById('noteProject').value),title:document.getElementById('noteTitle').value.trim(),content:document.getElementById('noteContent').value.trim(),link_url:document.getElementById('noteUrl').value.trim()}; if(!data.project_id||!data.title||!data.content)return showToast('Semua field wajib diisi','danger'); const r=id?await client.from('notes').update(data).eq('id',id):await client.from('notes').insert([data]); if(r.error){const rows=localRows('notes');if(id){const i=rows.findIndex(x=>String(x.id)===String(id));rows[i]={...rows[i],...data};}else rows.unshift({id:Date.now(),...data,created_at:new Date().toISOString()});saveLocalRows('notes',rows);showToast('Tabel notes belum tersedia; disimpan lokal. Jalankan SQL pendukung untuk sinkronisasi Supabase.','warning');}else showToast('Catatan disimpan','success');closeModal('noteModal');await loadResources();if(currentProjectId)renderProjectResources(currentProjectId); }
-        async function deleteNote(id) { if(!confirm('Hapus catatan ini?'))return;const r=await client.from('notes').delete().eq('id',id);if(r.error)saveLocalRows('notes',localRows('notes').filter(x=>String(x.id)!==String(id)));await loadResources();if(currentProjectId)renderProjectResources(currentProjectId); }
-        async function getReportData() { const [{data:projects=[]},{data:tasks=[]}] = await Promise.all([client.from('projects').select('*').eq('archived',false),client.from('tasks').select('*').eq('archived',false)]); return {projects,tasks}; }
-        async function loadReportSummary() { const {projects,tasks}=await getReportData(); document.getElementById('reportProjectCount').innerText=projects.length; document.getElementById('reportTaskCount').innerText=tasks.length; document.getElementById('reportDoneCount').innerText=tasks.filter(t=>t.status==='done').length; }
-        async function downloadExcelReport() { const {projects,tasks}=await getReportData(); const projectRows=projects.map(p=>({Project:p.name,Deskripsi:p.description||'',Status:'Aktif'})); const taskRows=tasks.map(t=>({Task:t.title,Project:projects.find(p=>p.id==t.project_id)?.name||'-',Status:t.status,Deadline:t.deadline,Deskripsi:t.description||''})); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(projectRows),'Project'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(taskRows),'Task'); XLSX.writeFile(wb,`TaskFlow-Laporan-${new Date().toISOString().slice(0,10)}.xlsx`); }
-        async function downloadPdfReport() { const {projects,tasks}=await getReportData(); if(!window.jspdf) return showToast('Pustaka PDF belum termuat. Periksa koneksi internet.','danger'); const {jsPDF}=window.jspdf; const pdf=new jsPDF(); const date=new Date().toLocaleDateString('id-ID'); pdf.setFontSize(18); pdf.text('TaskFlow - Laporan Project & Task',14,18); pdf.setFontSize(10); pdf.text(`Dibuat: ${date} | Project aktif: ${projects.length} | Task selesai: ${tasks.filter(t=>t.status==='done').length}`,14,25); pdf.autoTable({startY:32,head:[['Task','Project','Status','Deadline']],body:tasks.map(t=>[t.title,projects.find(p=>p.id==t.project_id)?.name||'-',t.status,t.deadline||'-']),styles:{fontSize:8},headStyles:{fillColor:[37,99,235]}}); pdf.save(`TaskFlow-Laporan-${new Date().toISOString().slice(0,10)}.pdf`); }
-        function toggleNotifications(e) { if(e)e.stopPropagation(); document.getElementById('notificationDropdown').classList.toggle('open'); }
-        function renderNotifications() { const today=new Date().toISOString().slice(0,10); client.from('tasks').select('*').eq('archived',false).then(({data=[]})=>{const dueToday=data.filter(t=>t.status!=='done' && t.deadline===today);const overdue=data.filter(t=>t.status!=='done' && t.deadline && t.deadline<today);const items=[...dueToday.map(t=>({kind:'Hari ini',icon:'calendar-clock',color:'text-red-600 bg-red-50',text:t.title,sub:`Deadline hari ini · ${projectName(t.project_id)}`,project_id:t.project_id})),...overdue.map(t=>({kind:'Terlambat',icon:'alert-triangle',color:'text-red-600 bg-red-50',text:t.title,sub:`Deadline ${t.deadline} · ${projectName(t.project_id)}`,project_id:t.project_id})),...documentsData.slice(0,2).map(d=>({kind:'Dokumen',icon:'file-text',color:'text-brand-600 bg-brand-50',text:d.name,sub:projectName(d.project_id),project_id:d.project_id})),...notesData.slice(0,2).map(n=>({kind:'Catatan',icon:'sticky-note',color:'text-amber-600 bg-amber-50',text:n.title,sub:projectName(n.project_id),project_id:n.project_id}))];document.getElementById('notificationCount').innerText=dueToday.length?`${dueToday.length} deadline hari ini`:`${items.length} notifikasi`;const badge=document.getElementById('notificationBadge');badge.innerText=items.length;badge.classList.toggle('hidden',!items.length);document.getElementById('notificationList').innerHTML=items.length?items.map(i=>`<button onclick="openProject(${i.project_id});document.getElementById('notificationDropdown').classList.remove('open')" class="w-full text-left p-4 hover:bg-slate-50 flex gap-3"><span class="w-8 h-8 rounded-lg ${i.color} flex items-center justify-center shrink-0"><i data-lucide="${i.icon}" class="w-4 h-4"></i></span><span><b class="text-sm text-slate-800 block">${esc(i.text)}</b><span class="text-xs text-slate-500 block mt-1">${esc(i.kind)} · ${esc(i.sub)}</span></span></button>`).join(''):'<p class="p-6 text-center text-sm text-slate-500">Tidak ada notifikasi.</p>';lucide.createIcons();}); }
-        document.addEventListener('click', e => { const dropdown=document.getElementById('notificationDropdown'); if(dropdown && !dropdown.parentElement.contains(e.target)) dropdown.classList.remove('open'); });
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toastContainer'); const toast = document.createElement('div'); toast.className = `toast ${type}`;
-            toast.innerHTML = `<span>${message}</span>`; container.appendChild(toast);
-            setTimeout(() => toast.classList.add('show'), 10); setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3000);
-        }
-        async function restoreTask(id){ await client.from("tasks").update({archived:false, archived_at:null}).eq("id",id); showToast("Task dipulihkan","success"); await refreshAll(); }
-        async function deleteForever(id){ if(confirm("Hapus permanen?")){ await client.from("tasks").delete().eq("id",id); showToast("Dihapus permanen","success"); await renderArchive(); await refreshAll(); } }
-        function toggleSidebar(){ document.getElementById("sidebar").classList.toggle("show"); document.getElementById("sidebarOverlay").classList.toggle("hidden"); }
-    </script>
+    <script src="./app.js"></script>
 </body>
 </html>
